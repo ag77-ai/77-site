@@ -27,6 +27,16 @@ Pages redeploys in ~30s.
   lock files break it. Clone into `$HOME` (`~/site`, `~/state`) instead.
 - Enabling Pages needs `Pages: write` on the token; Contents alone is not enough.
 
+## ⚠️ INSTALL FIRST, THEN CONNECT
+Safari, an iOS Home Screen app and a macOS Dock app each get their OWN storage partition.
+A token pasted into Safari is invisible to the installed app, so installing after connecting
+looks exactly like "it logged me out". Correct order on every device:
+  1. Add to Home Screen / Add to Dock
+  2. Open the INSTALLED icon (not Safari)
+  3. Paste the token there
+Re-installing the app wipes its storage again. Ticks are never lost - they are cached locally
+and upload as soon as a token is present.
+
 ## Do not
 Run this and the old claude.ai artifact at the same time — they write to different stores
 and will drift. The artifact is retired.
