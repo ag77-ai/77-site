@@ -118,6 +118,9 @@ details.oi-p[open]>summary{margin-bottom:10px;padding-bottom:10px;border-bottom:
 .tok p{margin:0 0 10px;font-size:13px;color:var(--i2);line-height:1.5}
 .tok input{width:100%;padding:11px;border-radius:8px;border:1px solid var(--l);background:var(--bg);
  color:var(--ink);font:13px var(--m);margin-bottom:8px}
+.tok .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tok button.sec{background:none;border:1px solid var(--l);color:var(--i2)}
+.tok .note{font-size:12px;color:var(--i3);margin-top:9px;line-height:1.45}
 .tok button{background:var(--acc);border:none;color:#0b0d10;font:700 12px var(--m);letter-spacing:.08em;
  padding:11px 16px;border-radius:8px;width:100%;cursor:pointer}
 .pul{background:var(--c);border:1px solid var(--l);border-radius:11px;padding:13px 15px;margin:11px 0;
@@ -134,7 +137,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--l);color:var(
 
 <div class="sync" id="sync" data-s="wait" onclick="tokPanel()"><span class="dot"></span><span id="synct">Starting…</span></div>
 <div class="pul"><div class="pl">☀️ Morning pulse <span id="pdate"></span></div><input id="pin" type="number" inputmode="numeric" min="30" max="120" placeholder="—"><div class="ph" id="pavg"></div></div>
-<div class="tok" id="tok" style="display:none"><h3>Connect this device</h3><p>Paste your GitHub token once. It is stored only in this browser and never leaves your device except to talk to GitHub. Tap the status pill any time to change it.</p><input id="tokin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…"><button onclick="tokSave()">SAVE &amp; SYNC</button></div>
+<div class="tok" id="tok" style="display:none"><h3>Connect this device</h3><p><b>Every installed app gets its own private storage.</b> Safari, the Home Screen app and the Dock app are three separate boxes as far as the browser is concerned — so an app you have just installed starts empty even though Safari already knows your token. Paste it once <b>here, inside this app</b>, and this device remembers it for good.</p><input id="tokin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…"><div class="row"><button class="sec" onclick="tokPaste()">PASTE</button><button onclick="tokSave()">SAVE &amp; SYNC</button></div><div class="note" id="toknote">Your ticks are safe either way — they save on this device first, and upload the moment you connect.</div></div>
 <div class="tot"><div class="n" id="pct">0%</div><div class="s"><span id="done">0</span> of <span id="all">0</span> done</div></div>
 
 <details class="oi-p"><summary class="oi-sum"><h3>Open items <span class="oi-ct" id="oict"></span></h3><span class="oi-hint">tap to open</span></summary><p class="oi-sub">These stay here until they are closed. Tap <b>DONE</b> when finished, or <b>LATER</b> to push one out of the way. If an item is a <b>number</b> — the time trial, your waist, a max test — just tell me the answer in chat and I will close it for you. The playground bar item is closed — inverted rows are in the plan. <b>Height corrected 15 Sep: that bar is at chin height, not navel height, so your heels go up on a bench or step.</b></p><div class="oi" data-k="tt"><div class="t">2 km time trial</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">Still the single biggest blocker. Every running pace in Block 1 is derived from it, and you have not run once since December 2025 — the export confirms it: five walks, 5.00 km each, 8.35–8.70 min/km, zero runs. 8 minutes easy warm-up, then hard but controlled. Log the total and both kilometre splits.</div></div><div class="oi" data-k="waist"><div class="t">Waist measurement at the navel</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">Open since 19 August. Device-independent, so it survives the move between Hyderabad and Bangalore and the change of scale — which no scale reading does. Tape at the navel, relaxed, not sucked in. Two minutes.</div></div><div class="oi" data-k="blood"><div class="t">Book the bloods</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">HbA1c is the priority — fasting glucose was 102.6 mg/dL, inside the impaired band. One draw: HbA1c, fasting glucose repeat, fasting insulin, vitamin D 25-OH, B12, ferritin, lipids, morning testosterone. Mention the 2:45 AM wake — dawn cortisol lifts a very early reading.</div></div><div class="oi" data-k="kcal"><div class="t">Weigh the recurring meal components, once</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">Settles the ~500 kcal/day contradiction permanently. NO calorie target gets issued until this is done. This now has its own chat — open it with “Read project memory first — food audit.”</div></div><div class="oi" data-k="maxt"><div class="t">Max tests</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">Pull-ups, chin-ups, push-ups, plank to failure, hollow hold, fasted bodyweight. Your Day 100 comparison set. Known so far: 5 strict pull-ups and 7 chin-ups, 3 sets of each, mostly clean.</div></div><div class="oi" data-k="hinge"><div class="t">Hip hinge video — 10 slow reps, side-on</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">Decides when loaded hinges can safely progress. The RDL and the dead-stop swing are already in this fortnight, so this one is now time-sensitive. Film side-on so the hip travel is visible.</div></div><div class="oi" data-k="whey"><div class="t">Source whey protein</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">Third-party lab tested, isolate preferred, not expensive. You will not use Origin twice a day, so the second serving needs a source.</div></div><div class="oi" data-k="load"><div class="t">Borrow more weight before 7 Oct</div><div class="btns"><button class="bd-done" data-a="done">DONE</button><button class="bd-later" data-a="later">LATER</button></div><div class="y">HARD GATE on Block 2, which now starts 7 Oct. 18.1 kg is your ceiling and it runs out for goblet squats and RDLs. Dumbbells, borrowed.</div></div></details>
@@ -643,9 +646,22 @@ function b64d(b){return decodeURIComponent(escape(atob(b.replace(/\s/g,''))));}
 function ghUrl(){return 'https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+FILE;}
 function ghHead(){return {'Authorization':'Bearer '+TOKEN,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};}
 function tokPanel(){var t=document.getElementById('tok');t.style.display=t.style.display==='none'?'block':'none';}
+function tokNote(t){var n=document.getElementById('toknote');if(n)n.textContent=t;}
+function tokPaste(){
+ if(!(navigator.clipboard&&navigator.clipboard.readText)){
+  tokNote('This browser will not let a page read the clipboard. Long-press the box above and choose Paste.');return;}
+ navigator.clipboard.readText().then(function(t){
+  t=(t||'').trim();
+  if(!t){tokNote('Clipboard is empty. Copy the token first, then tap PASTE.');return;}
+  document.getElementById('tokin').value=t;
+  tokNote('Pasted. Now tap SAVE & SYNC.');
+ }).catch(function(){tokNote('Clipboard blocked. Long-press the box above and choose Paste.');});
+}
 function tokSave(){
  var v=document.getElementById('tokin').value.trim();
- if(!v){return;}
+ if(!v){tokNote('Nothing in the box yet.');return;}
+ if(v.indexOf('github_pat_')!==0&&v.indexOf('ghp_')!==0){
+  tokNote('That does not look like a GitHub token. It should start with github_pat_');return;}
  TOKEN=v;try{localStorage.setItem(GK,v)}catch(e){}
  document.getElementById('tok').style.display='none';
  document.getElementById('tokin').value='';
