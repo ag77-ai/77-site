@@ -116,12 +116,20 @@ details.oi-p[open]>summary{margin-bottom:10px;padding-bottom:10px;border-bottom:
  color:var(--ink);font:13px var(--m);margin-bottom:8px}
 .tok button{background:var(--acc);border:none;color:#0b0d10;font:700 12px var(--m);letter-spacing:.08em;
  padding:11px 16px;border-radius:8px;width:100%;cursor:pointer}
+.pul{background:var(--c);border:1px solid var(--l);border-radius:11px;padding:13px 15px;margin:11px 0;
+ display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.pul .pl{font:700 10px/1.3 var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.pul .pl span{color:var(--i3);letter-spacing:.06em}
+.pul input{width:96px;padding:10px;border-radius:8px;border:1px solid var(--l);background:var(--bg);
+ color:var(--ink);font:700 18px var(--m);text-align:center}
+.pul .ph{grid-column:1/-1;font-size:12px;color:var(--i3);line-height:1.45}
 footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--l);color:var(--i3);font-size:11.5px}
 </style></head><body><div class="w">
 <header><div class="k">77 Performance OS</div>
 <h1>Days 1–14<span>Sat 12 Sep → Fri 25 Sep 2026 · Day 100 = Sun 20 Dec · tap to tick, it saves</span></h1></header>
 
 <div class="sync" id="sync" data-s="wait" onclick="tokPanel()"><span class="dot"></span><span id="synct">Starting…</span></div>
+<div class="pul"><div class="pl">☀️ Morning pulse <span id="pdate"></span></div><input id="pin" type="number" inputmode="numeric" min="30" max="120" placeholder="—"><div class="ph" id="pavg"></div></div>
 <div class="tok" id="tok" style="display:none"><h3>Connect this device</h3><p>Paste your GitHub token once. It is stored only in this browser and never leaves your device except to talk to GitHub. Tap the status pill any time to change it.</p><input id="tokin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…"><button onclick="tokSave()">SAVE &amp; SYNC</button></div>
 <div class="tot"><div class="n" id="pct">0%</div><div class="s"><span id="done">0</span> of <span id="all">0</span> done</div></div>
 
@@ -616,15 +624,16 @@ General fitness programming, not medical advice.</footer></div>
 /* ---------- GitHub-backed state ----------
    Repo ag77-ai/77-state, file state.json. Token lives in this browser only. */
 var OWNER='ag77-ai',REPO='77-state',FILE='state.json';
-var K='77d1',OK='77oi',TK='77ts',GK='77gh',S={},O={},LT='',TOKEN='';
+var K='77d1',OK='77oi',TK='77ts',GK='77gh',PK='77p',S={},O={},P={},LT='',TOKEN='';
 try{S=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){S={}}
 try{O=JSON.parse(localStorage.getItem(OK)||'{}')}catch(e){O={}}
 try{LT=localStorage.getItem(TK)||''}catch(e){LT=''}
 try{TOKEN=localStorage.getItem(GK)||''}catch(e){TOKEN=''}
+try{P=JSON.parse(localStorage.getItem(PK)||'{}')}catch(e){P={}}
 var SHA=null,wt=null,pulling=false,dirty=0,inflight=0,booted=false;
 var syncEl=document.getElementById('sync'),syncT=document.getElementById('synct');
 function setSync(st,txt){if(!syncEl)return;syncEl.setAttribute('data-s',st);if(syncT)syncT.textContent=txt;}
-function lsSave(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(OK,JSON.stringify(O));localStorage.setItem(TK,LT);}catch(e){}}
+function lsSave(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(OK,JSON.stringify(O));localStorage.setItem(PK,JSON.stringify(P));localStorage.setItem(TK,LT);}catch(e){}}
 function b64e(t){return btoa(unescape(encodeURIComponent(t)));}
 function b64d(b){return decodeURIComponent(escape(atob(b.replace(/\s/g,''))));}
 function ghUrl(){return 'https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+FILE;}
@@ -656,7 +665,7 @@ function pull(afterConnect){
     if(!booted&&LT&&ru&&LT>ru){booted=true;dirty++;flush();return;}
     booted=true;
     if(dirty||inflight){setSync('ok','Synced');return;}
-    pulling=true;S=d.ticks||{};O=d.items||{};LT=ru;lsSave();applyAll();pulling=false;
+    pulling=true;S=d.ticks||{};O=d.items||{};P=d.pulse||{};LT=ru;lsSave();applyAll();pulling=false;
     setSync('ok','Synced');
   })
   .catch(function(){setSync('err','Offline — saved on this device');});
@@ -665,7 +674,7 @@ function flush(){
  if(!TOKEN)return;
  var mark=dirty;inflight=1;
  var ts=new Date().toISOString();
- var body={message:'77 '+ts,content:b64e(JSON.stringify({ticks:S,items:O,updated:ts},null,1)),branch:'main'};
+ var body={message:'77 '+ts,content:b64e(JSON.stringify({ticks:S,items:O,pulse:P,updated:ts},null,1)),branch:'main'};
  if(SHA)body.sha=SHA;
  fetch(ghUrl(),{method:'PUT',headers:ghHead(),body:JSON.stringify(body)})
   .then(function(r){
@@ -788,8 +797,35 @@ document.getElementById('xpb').addEventListener('click',function(){
 /* ---- apply shared state ---- */
 function applyAll(){
  cbs.forEach(function(c){c.checked=!!S[c.id];});
- bars();oiPaint();
+ bars();oiPaint();pulsePaint();
 }
+/* ---- morning pulse: the resting-HR stand-in, no watch needed ---- */
+function pulseKey(d){d=d||new Date();
+ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function pulsePaint(){
+ var k=pulseKey(),el=document.getElementById('pin'),dt=document.getElementById('pdate'),a=document.getElementById('pavg');
+ if(el&&document.activeElement!==el)el.value=P[k]||'';
+ if(dt)dt.textContent=k;
+ if(!a)return;
+ var ks=Object.keys(P).sort(),last=ks.slice(-7),vals=last.map(function(x){return P[x]});
+ if(!vals.length){a.textContent='Before you get out of bed, fingers on your wrist, count 30 seconds and double it. One number a day \u2014 the trend is what matters, not any single reading.';return;}
+ var m=Math.round(vals.reduce(function(x,y){return x+y},0)/vals.length);
+ var txt=last.length+'-day average '+m+' bpm \u00b7 '+vals.join(' \u00b7 ');
+ if(ks.length>=10){
+  var base=ks.slice(0,7).map(function(x){return P[x]}),bm=base.reduce(function(x,y){return x+y},0)/base.length;
+  var diff=Math.round(m-bm);
+  if(diff>=5)txt+=' \u2014 up '+diff+' on your first week. Tell me.';
+  else if(diff<=-3)txt+=' \u2014 down '+(-diff)+' on your first week. That is fitness.';
+ }
+ a.textContent=txt;
+}
+(function(){var el=document.getElementById('pin');if(!el)return;
+ el.addEventListener('change',function(){
+  var v=parseInt(el.value,10);
+  if(v>=30&&v<=120){P[pulseKey()]=v;}else{delete P[pulseKey()];el.value='';}
+  push();pulsePaint();
+ });
+})();
 /* ---- open TODAY and scroll to it ---- */
 (function(){
  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
