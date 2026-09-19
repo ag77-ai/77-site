@@ -873,4 +873,62 @@ if(!TOKEN){
  setInterval(function(){if(!dirty&&!inflight)pull();},120000);
 }
 window.addEventListener('focus',function(){if(TOKEN&&!dirty&&!inflight)pull();});
-</script></body></html>
+</script>
+<script>/* ---- REST TIMER (19 Sep) — one button per exercise; tap after each set ---- */
+(function(){
+var css=document.createElement('style');css.textContent=
+'.rt{display:block;width:fit-content;margin:8px 0 4px;font:700 11px/1 var(--m,monospace);letter-spacing:.04em;padding:8px 9px;border-radius:8px;border:1px solid var(--acc,#c8a45c);color:var(--acc,#c8a45c);background:none;cursor:pointer;white-space:nowrap}'+
+'.rt.on{background:var(--acc,#c8a45c);color:#0b0d10}'+
+'#rtbar{position:fixed;left:0;right:0;bottom:0;z-index:99;display:none;background:#14171c;border-top:2px solid var(--acc,#c8a45c);padding:12px 16px calc(12px + env(safe-area-inset-bottom));font-family:var(--m,monospace);color:#eaecef}'+
+'#rtbar .row{display:flex;align-items:center;gap:12px;max-width:720px;margin:0 auto}'+
+'#rtbar .t{font:800 34px/1 var(--m,monospace);min-width:92px}'+
+'#rtbar .l{flex:1;font-size:12px;line-height:1.35;color:#98a0ac}#rtbar .l b{color:#eaecef}'+
+'#rtbar button{font:700 12px var(--m,monospace);padding:11px 12px;border-radius:8px;border:1px solid #262b34;background:none;color:#eaecef}'+
+'#rtbar.go{border-top-color:#4ea87a;background:#12301f}#rtbar.go .t{color:#4ea87a}'+
+'#rtbar.done{border-top-color:#4ea87a}';
+document.head.appendChild(css);
+var bar=document.createElement('div');bar.id='rtbar';
+bar.innerHTML='<div class="row"><div class="t" id="rtt">0:00</div><div class="l" id="rtl"></div><button id="rtp">+15s</button><button id="rtx">✕</button></div>';
+document.body.appendChild(bar);
+var T=document.getElementById('rtt'),L=document.getElementById('rtl'),end=0,tick=null,cur=null,ac=null,wl=null,cnt={};
+function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
+function beep(at,f){if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f||880;o.connect(g);g.connect(ac.destination);
+ g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(0.4,at+0.02);g.gain.exponentialRampToValueAtTime(0.0001,at+0.25);o.start(at);o.stop(at+0.3);}
+function lock(){try{if(navigator.wakeLock&&!wl)navigator.wakeLock.request('screen').then(function(w){wl=w;w.addEventListener('release',function(){wl=null})}).catch(function(){})}catch(e){}}
+function unlock(){try{if(wl){wl.release();wl=null}}catch(e){}}
+function stop(){clearInterval(tick);tick=null;bar.style.display='none';bar.className='';if(cur)cur.btn.classList.remove('on');cur=null;unlock();}
+function paint(){var left=(end-Date.now())/1000;
+ if(left<=0){clearInterval(tick);tick=null;bar.className='go';T.textContent='GO';
+  L.innerHTML='<b>Set '+(cur.k+1)+' of '+cur.n+'</b> · '+cur.name;unlock();
+  setTimeout(function(){if(!tick)stop();},20000);return;}
+ T.textContent=fmt(left);}
+function start(ex,btn,rest,n,name){
+ try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){ac=null}
+ var id=ex.getAttribute('for');cnt[id]=(cnt[id]||0)+1;var k=cnt[id];
+ if(cur&&cur.btn!==btn)cur.btn.classList.remove('on');
+ btn.textContent='⏱ '+k+'/'+n;
+ if(k>=n){clearInterval(tick);tick=null;cur={btn:btn,k:k,n:n,name:name};bar.style.display='block';bar.className='done';
+  T.textContent='✓';L.innerHTML='<b>All '+n+' sets done</b> · '+name+' — <b>tick it now</b>';unlock();
+  setTimeout(function(){if(cur&&cur.btn===btn&&!tick)stop();},15000);return;}
+ cur={btn:btn,k:k,n:n,name:name};btn.classList.add('on');
+ end=Date.now()+rest*1000;bar.style.display='block';bar.className='';
+ L.innerHTML='<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+rest+'s';
+ if(ac){var t0=ac.currentTime+rest;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}
+ clearInterval(tick);tick=setInterval(paint,250);paint();lock();}
+document.getElementById('rtx').addEventListener('click',function(){if(ac)try{ac.close()}catch(e){};ac=null;stop();});
+document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;if(ac){try{ac.close()}catch(e){}ac=new (window.AudioContext||window.webkitAudioContext)();var t0=ac.currentTime+(end-Date.now())/1000;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}paint();}});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&tick)paint();});
+[].forEach.call(document.querySelectorAll('label.ex'),function(ex){
+ var p=ex.querySelector('.p');if(!p)return;var tx=p.textContent;
+ var r=tx.match(/rest (\d+) sec/i)||tx.match(/(\d+) sec rest/i);if(!r)return;
+ var n=tx.match(/(\d+)\s*(sets?|rounds?)/i);n=n?parseInt(n[1],10):1;if(n<2)return;
+ var name=(ex.querySelector('b')||{}).textContent||'';
+ var b=document.createElement('button');b.type='button';b.className='rt';b.textContent='⏱ '+r[1]+'s';
+ b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();start(ex,b,parseInt(r[1],10),n,name);});
+ p.parentNode.insertBefore(b,p.nextSibling);
+ var cb=ex.querySelector('input[type=checkbox]');
+ if(cb)cb.addEventListener('change',function(){if(cb.checked){cnt[ex.getAttribute('for')]=0;b.textContent='⏱ '+r[1]+'s';if(cur&&cur.btn===b)stop();}});
+});
+})();
+</script>
+</body></html>
