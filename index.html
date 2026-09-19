@@ -740,7 +740,7 @@ function bars(){
 }
 cbs.forEach(function(c){
  if(S[c.id])c.checked=true;
- c.addEventListener('change',function(){ if(c.checked)S[c.id]=1; else delete S[c.id]; save(); bars(); });
+ c.addEventListener('change',function(){ if(c.checked)S[c.id]=Date.now(); else delete S[c.id]; save(); bars(); });
 });
 bars();
 
