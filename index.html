@@ -888,11 +888,15 @@ var css=document.createElement('style');css.textContent=
 '#rtbar.done{border-top-color:#4ea87a}';
 document.head.appendChild(css);
 var bar=document.createElement('div');bar.id='rtbar';
-bar.innerHTML='<div class="row"><div class="t" id="rtt">0:00</div><div class="l" id="rtl"></div><button id="rtp">+15s</button><button id="rtx">✕</button></div>';
+bar.innerHTML='<div class="row"><div class="t" id="rtt">0:00</div><div class="l" id="rtl"></div><button id="rts"></button><button id="rtp">+15s</button><button id="rtx">✕</button></div>';
 document.body.appendChild(bar);
-var T=document.getElementById('rtt'),L=document.getElementById('rtl'),end=0,tick=null,cur=null,ac=null,wl=null,cnt={};
+var T=document.getElementById('rtt'),L=document.getElementById('rtl'),end=0,tick=null,cur=null,ac=null,mg=null,wl=null,cnt={};
+var SND=true;try{SND=localStorage.getItem('77snd')!=='0'}catch(e){}
+var SB=document.getElementById('rts');function sndPaint(){SB.textContent=SND?'🔊 ON':'🔇 OFF';SB.style.opacity=SND?'1':'.6';}sndPaint();
+SB.addEventListener('click',function(){SND=!SND;try{localStorage.setItem('77snd',SND?'1':'0')}catch(e){}if(mg)mg.gain.value=SND?1:0;sndPaint();});
+function newAC(){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.gain.value=SND?1:0;mg.connect(ac.destination);}catch(e){ac=null;mg=null}}
 function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
-function beep(at,f){if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f||880;o.connect(g);g.connect(ac.destination);
+function beep(at,f){if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f||880;o.connect(g);g.connect(mg||ac.destination);
  g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(0.4,at+0.02);g.gain.exponentialRampToValueAtTime(0.0001,at+0.25);o.start(at);o.stop(at+0.3);}
 function lock(){try{if(navigator.wakeLock&&!wl)navigator.wakeLock.request('screen').then(function(w){wl=w;w.addEventListener('release',function(){wl=null})}).catch(function(){})}catch(e){}}
 function unlock(){try{if(wl){wl.release();wl=null}}catch(e){}}
@@ -904,7 +908,7 @@ function paint(){var left=(end-Date.now())/1000;
   setTimeout(function(){if(!tick)stop();},20000);return;}
  T.textContent=fmt(left);}
 function start(ex,btn,rest,n,name){
- try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){ac=null}
+ try{if(!ac)newAC();if(ac&&ac.state==='suspended')ac.resume();}catch(e){ac=null}
  var id=ex.getAttribute('for');cnt[id]=(cnt[id]||0)+1;var k=cnt[id];
  if(cur&&cur.btn!==btn)cur.btn.classList.remove('on');
  btn.textContent='⏱ '+k+'/'+n;
@@ -919,7 +923,7 @@ function start(ex,btn,rest,n,name){
  if(ac){var t0=ac.currentTime+rest;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}
  clearInterval(tick);tick=setInterval(paint,250);paint();lock();}
 document.getElementById('rtx').addEventListener('click',function(){if(ac)try{ac.close()}catch(e){};ac=null;stop();});
-document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;if(ac){try{ac.close()}catch(e){}ac=new (window.AudioContext||window.webkitAudioContext)();var t0=ac.currentTime+(end-Date.now())/1000;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}paint();}});
+document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;if(ac){try{ac.close()}catch(e){}newAC();if(ac){var t0=ac.currentTime+(end-Date.now())/1000;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}}paint();}});
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&tick)paint();});
 [].forEach.call(document.querySelectorAll('label.ex'),function(ex){
  var p=ex.querySelector('.p');if(!p)return;var tx=p.textContent;
