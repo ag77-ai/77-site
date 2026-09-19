@@ -899,7 +899,8 @@ function unlock(){try{if(wl){wl.release();wl=null}}catch(e){}}
 function stop(){clearInterval(tick);tick=null;bar.style.display='none';bar.className='';if(cur)cur.btn.classList.remove('on');cur=null;unlock();}
 function paint(){var left=(end-Date.now())/1000;
  if(left<=0){clearInterval(tick);tick=null;bar.className='go';T.textContent='GO';
-  L.innerHTML='<b>Set '+(cur.k+1)+' of '+cur.n+'</b> · '+cur.name;unlock();
+  L.innerHTML=cur.last?'<b>Next exercise</b>':'<b>Set '+(cur.k+1)+' of '+cur.n+'</b> · '+cur.name;unlock();
+  if(cur.last){cnt[cur.btn.parentNode.closest('label.ex').getAttribute('for')]=0;cur.btn.textContent='⏱ done';}
   setTimeout(function(){if(!tick)stop();},20000);return;}
  T.textContent=fmt(left);}
 function start(ex,btn,rest,n,name){
@@ -908,8 +909,10 @@ function start(ex,btn,rest,n,name){
  if(cur&&cur.btn!==btn)cur.btn.classList.remove('on');
  btn.textContent='⏱ '+k+'/'+n;
  if(k>=n){clearInterval(tick);tick=null;cur={btn:btn,k:k,n:n,name:name};bar.style.display='block';bar.className='done';
-  T.textContent='✓';L.innerHTML='<b>All '+n+' sets done</b> · '+name+' — <b>tick it now</b>';unlock();
-  setTimeout(function(){if(cur&&cur.btn===btn&&!tick)stop();},15000);return;}
+  cur={btn:btn,k:k,n:n,name:name,last:true};btn.classList.add('on');end=Date.now()+rest*1000;
+  L.innerHTML='<b>All '+n+' sets done — tick it now</b> · rest '+rest+'s, then the next exercise';
+  if(ac){var t1=ac.currentTime+rest;beep(t1-2,660);beep(t1-1,660);beep(t1,990);beep(t1+0.35,990);}
+  tick=setInterval(paint,250);paint();lock();return;}
  cur={btn:btn,k:k,n:n,name:name};btn.classList.add('on');
  end=Date.now()+rest*1000;bar.style.display='block';bar.className='';
  L.innerHTML='<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+rest+'s';
@@ -927,7 +930,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&tic
  b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();start(ex,b,parseInt(r[1],10),n,name);});
  p.parentNode.insertBefore(b,p.nextSibling);
  var cb=ex.querySelector('input[type=checkbox]');
- if(cb)cb.addEventListener('change',function(){if(cb.checked){cnt[ex.getAttribute('for')]=0;b.textContent='⏱ '+r[1]+'s';if(cur&&cur.btn===b)stop();}});
+ if(cb)cb.addEventListener('change',function(){if(cb.checked){cnt[ex.getAttribute('for')]=0;b.textContent='⏱ '+r[1]+'s';if(cur&&cur.btn===b&&!cur.last)stop();}});
 });
 })();
 </script>
