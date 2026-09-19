@@ -15,8 +15,7 @@
 
 ## Redeploy
 ```sh
-python3 ~/build77.py                 # reads the plan, writes this folder (~/site)
-cd ~/site && git add -A && git commit -m "…" && git push
+bash ~/mnt/77-performance-os/_infra/deploy.sh "message"   # builds + pushes; everything lives in _infra
 ```
 Pages redeploys in ~30s.
 
