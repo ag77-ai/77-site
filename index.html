@@ -953,62 +953,77 @@ if(!TOKEN){
 }
 window.addEventListener('focus',function(){if(TOKEN&&!dirty&&!inflight)pull();});
 </script>
-<script>/* ---- REST TIMER (19 Sep) — one button per exercise; tap after each set ---- */
+<script>/* ---- REST TIMER v2 (22 Sep): ONE countdown at a time (new tap cancels old, incl. its beeps) + SCREEN STAYS ON ---- */
 (function(){
 var css=document.createElement('style');css.textContent=
 '.rt{display:block;width:fit-content;margin:8px 0 4px;font:700 11px/1 var(--m,monospace);letter-spacing:.04em;padding:8px 9px;border-radius:8px;border:1px solid var(--acc,#c8a45c);color:var(--acc,#c8a45c);background:none;cursor:pointer;white-space:nowrap}'+
 '.rt.on{background:var(--acc,#c8a45c);color:#0b0d10}'+
 '#rtbar{position:fixed;left:0;right:0;bottom:0;z-index:99;display:none;background:#14171c;border-top:2px solid var(--acc,#c8a45c);padding:12px 16px calc(12px + env(safe-area-inset-bottom));font-family:var(--m,monospace);color:#eaecef}'+
-'#rtbar .row{display:flex;align-items:center;gap:12px;max-width:720px;margin:0 auto}'+
-'#rtbar .t{font:800 34px/1 var(--m,monospace);min-width:92px}'+
+'#rtbar .row{display:flex;align-items:center;gap:10px;max-width:720px;margin:0 auto}'+
+'#rtbar .t{font:800 34px/1 var(--m,monospace);min-width:88px}'+
 '#rtbar .l{flex:1;font-size:12px;line-height:1.35;color:#98a0ac}#rtbar .l b{color:#eaecef}'+
-'#rtbar button{font:700 12px var(--m,monospace);padding:11px 12px;border-radius:8px;border:1px solid #262b34;background:none;color:#eaecef}'+
+'#rtbar button{font:700 12px var(--m,monospace);padding:11px 10px;border-radius:8px;border:1px solid #262b34;background:none;color:#eaecef}'+
 '#rtbar.go{border-top-color:#4ea87a;background:#12301f}#rtbar.go .t{color:#4ea87a}'+
-'#rtbar.done{border-top-color:#4ea87a}';
+'#wakeb{position:fixed;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:98;font:700 10.5px var(--m,monospace);padding:7px 9px;border-radius:99px;border:1px solid #262b34;background:#14171c;color:#98a0ac}'+
+'#wakeb.on{color:#4ea87a;border-color:rgba(78,168,122,.5)}';
 document.head.appendChild(css);
+/* ---------- screen stays on: Wake Lock API + silent looping video fallback (iOS home-screen apps) ---------- */
+var WK=true;try{WK=localStorage.getItem('77wake')!=='0'}catch(e){}
+var wl=null,vid=null,wb=document.createElement('button');wb.id='wakeb';document.body.appendChild(wb);
+function wpaint(){var on=WK&&(wl||(vid&&!vid.paused));wb.className=on?'on':'';wb.textContent=WK?(on?'☀ SCREEN ON':'☀ TAP TO KEEP ON'):'🌙 SCREEN CAN SLEEP';}
+function wakeOn(){ if(!WK)return;
+ try{ if('wakeLock' in navigator && !wl) navigator.wakeLock.request('screen').then(function(w){wl=w;w.addEventListener('release',function(){wl=null;wpaint();});wpaint();}).catch(function(){}); }catch(e){}
+ try{ if(!vid){vid=document.createElement('video');vid.setAttribute('playsinline','');vid.setAttribute('muted','');vid.muted=true;vid.loop=true;
+   vid.style.cssText='position:fixed;width:1px;height:1px;opacity:0.01;left:0;bottom:0;pointer-events:none';
+   vid.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMrbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAB9AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAlV0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAfQAAAAAAABAAAAAAHNbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAgABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABeG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAThzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAK/+EAFmdCwArZHsBEAAADAAQAAAMACDxImSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAApAAAAKQAAAABhzdHRzAAAAAAAAAAEAAAACAABAAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAACAAAAAQAAABxzdHN6AAAAAAAAAAAAAAACAAAChgAAAAoAAAAUc3RjbwAAAAAAAAABAAADWwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNTguNzYuMTAwAAAACGZyZWUAAAKYbWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjMgcjMwNjAgNWRiNmFhNiAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjEgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBb///w9FAAFPf4AAAAAGQZo4CvqA';document.body.appendChild(vid);}
+   var p=vid.play();if(p&&p.then)p.then(wpaint).catch(function(){});}catch(e){}
+ wpaint(); }
+function wakeOff(){ try{if(wl){wl.release();wl=null}}catch(e){} try{if(vid)vid.pause()}catch(e){} wpaint(); }
+wb.addEventListener('click',function(e){e.stopPropagation();WK=!WK;try{localStorage.setItem('77wake',WK?'1':'0')}catch(x){} if(WK)wakeOn();else wakeOff();});
+/* any tap re-arms it (browsers only allow this inside a user gesture) */
+document.addEventListener('pointerdown',function(){ if(WK&&!(wl||(vid&&!vid.paused)))wakeOn(); },true);
+document.addEventListener('visibilitychange',function(){ if(!document.hidden&&WK)wakeOn(); });
+wpaint();
+/* ---------- the timer ---------- */
 var bar=document.createElement('div');bar.id='rtbar';
 bar.innerHTML='<div class="row"><div class="t" id="rtt">0:00</div><div class="l" id="rtl"></div><button id="rts"></button><button id="rtp">+15s</button><button id="rtx">✕</button></div>';
 document.body.appendChild(bar);
-var T=document.getElementById('rtt'),L=document.getElementById('rtl'),end=0,tick=null,cur=null,ac=null,mg=null,wl=null,cnt={};
+var T=document.getElementById('rtt'),L=document.getElementById('rtl'),end=0,tick=null,cur=null,ac=null,sched=[],cnt={};
 var SND=true;try{SND=localStorage.getItem('77snd')!=='0'}catch(e){}
-var SB=document.getElementById('rts');function sndPaint(){SB.textContent=SND?'🔊 ON':'🔇 OFF';SB.style.opacity=SND?'1':'.6';}sndPaint();
-SB.addEventListener('click',function(){SND=!SND;try{localStorage.setItem('77snd',SND?'1':'0')}catch(e){}if(mg)mg.gain.value=SND?1:0;sndPaint();});
-function newAC(){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.gain.value=SND?1:0;mg.connect(ac.destination);}catch(e){ac=null;mg=null}}
+var SB=document.getElementById('rts');function sndPaint(){SB.textContent=SND?'🔊':'🔇';SB.style.opacity=SND?'1':'.6';}sndPaint();
+SB.addEventListener('click',function(){SND=!SND;try{localStorage.setItem('77snd',SND?'1':'0')}catch(e){} if(!SND)cancelBeeps();else if(tick)scheduleBeeps();sndPaint();});
 function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
-function beep(at,f){if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f||880;o.connect(g);g.connect(mg||ac.destination);
- g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(0.4,at+0.02);g.gain.exponentialRampToValueAtTime(0.0001,at+0.25);o.start(at);o.stop(at+0.3);}
-function lock(){try{if(navigator.wakeLock&&!wl)navigator.wakeLock.request('screen').then(function(w){wl=w;w.addEventListener('release',function(){wl=null})}).catch(function(){})}catch(e){}}
-function unlock(){try{if(wl){wl.release();wl=null}}catch(e){}}
-function stop(){clearInterval(tick);tick=null;bar.style.display='none';bar.className='';if(cur)cur.btn.classList.remove('on');cur=null;unlock();}
+function ensureAC(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){ac=null}}
+function cancelBeeps(){sched.forEach(function(o){try{o.stop(0);o.disconnect();}catch(e){}});sched=[];}
+function beep(at,f){var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);
+ g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(0.4,at+0.02);g.gain.exponentialRampToValueAtTime(0.0001,at+0.25);o.start(at);o.stop(at+0.3);sched.push(o);}
+function scheduleBeeps(){cancelBeeps();if(!SND||!ac)return;var left=(end-Date.now())/1000;if(left<=0)return;var t0=ac.currentTime+left;
+ if(left>2)beep(t0-2,660);if(left>1)beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}
+function stop(){clearInterval(tick);tick=null;cancelBeeps();bar.style.display='none';bar.className='';if(cur)cur.btn.classList.remove('on');cur=null;}
 function paint(){var left=(end-Date.now())/1000;
  if(left<=0){clearInterval(tick);tick=null;bar.className='go';T.textContent='GO';
-  L.innerHTML=cur.last?'<b>Next exercise</b>':'<b>Set '+(cur.k+1)+' of '+cur.n+'</b> · '+cur.name;unlock();
-  if(cur.last){cnt[cur.btn.parentNode.closest('label.ex').getAttribute('for')]=0;cur.btn.textContent='⏱ done';}
-  setTimeout(function(){if(!tick)stop();},20000);return;}
+  L.innerHTML=cur.last?'<b>Next exercise</b>':'<b>Set '+(cur.k+1)+' of '+cur.n+'</b> · '+cur.name;
+  if(cur.last){cnt[cur.id]=0;cur.btn.textContent='⏱ done';}
+  var mine=cur;setTimeout(function(){if(cur===mine&&!tick)stop();},20000);return;}
  T.textContent=fmt(left);}
 function start(ex,btn,rest,n,name){
- try{if(!ac)newAC();if(ac&&ac.state==='suspended')ac.resume();}catch(e){ac=null}
- var id=ex.getAttribute('for');cnt[id]=(cnt[id]||0)+1;var k=cnt[id];
- if(cur&&cur.btn!==btn)cur.btn.classList.remove('on');
- btn.textContent='⏱ '+k+'/'+n;
- if(k>=n){clearInterval(tick);tick=null;cur={btn:btn,k:k,n:n,name:name};bar.style.display='block';bar.className='done';
-  cur={btn:btn,k:k,n:n,name:name,last:true};btn.classList.add('on');end=Date.now()+rest*1000;
-  L.innerHTML='<b>All '+n+' sets done — tick it now</b> · rest '+rest+'s, then the next exercise';
-  if(ac){var t1=ac.currentTime+rest;beep(t1-2,660);beep(t1-1,660);beep(t1,990);beep(t1+0.35,990);}
-  tick=setInterval(paint,250);paint();lock();return;}
- cur={btn:btn,k:k,n:n,name:name};btn.classList.add('on');
+ ensureAC();
+ /* ONE countdown only: whatever was running — any exercise — is cancelled, beeps included */
+ clearInterval(tick);tick=null;cancelBeeps();if(cur&&cur.btn!==btn)cur.btn.classList.remove('on');
+ var id=ex.getAttribute('for');cnt[id]=(cnt[id]||0)+1;var k=cnt[id],last=k>=n;
+ btn.textContent='⏱ '+Math.min(k,n)+'/'+n;btn.classList.add('on');
+ cur={btn:btn,k:k,n:n,name:name,id:id,last:last};
  end=Date.now()+rest*1000;bar.style.display='block';bar.className='';
- L.innerHTML='<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+rest+'s';
- if(ac){var t0=ac.currentTime+rest;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}
- clearInterval(tick);tick=setInterval(paint,250);paint();lock();}
-document.getElementById('rtx').addEventListener('click',function(){if(ac)try{ac.close()}catch(e){};ac=null;stop();});
-document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;if(ac){try{ac.close()}catch(e){}newAC();if(ac){var t0=ac.currentTime+(end-Date.now())/1000;beep(t0-2,660);beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}}paint();}});
-document.addEventListener('visibilitychange',function(){if(!document.hidden&&tick)paint();});
+ L.innerHTML=last?'<b>All '+n+' sets done — tick it now</b> · '+rest+'s to the next exercise':'<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+rest+'s';
+ scheduleBeeps();tick=setInterval(paint,250);paint();}
+document.getElementById('rtx').addEventListener('click',stop);
+document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;scheduleBeeps();paint();}});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&tick){paint();scheduleBeeps();}});
 [].forEach.call(document.querySelectorAll('label.ex'),function(ex){
  var p=ex.querySelector('.p');if(!p)return;var tx=p.textContent;
  var r=tx.match(/rest (\d+) sec/i)||tx.match(/(\d+) sec rest/i);if(!r)return;
  var n=tx.match(/(\d+)\s*(sets?|rounds?)/i);n=n?parseInt(n[1],10):1;if(n<2)return;
- var name=(ex.querySelector('b')||{}).textContent||'';
+ var name=(ex.querySelector('.txt > b')||ex.querySelector('b')||{}).textContent||'';
  var b=document.createElement('button');b.type='button';b.className='rt';b.textContent='⏱ '+r[1]+'s';
  b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();start(ex,b,parseInt(r[1],10),n,name);});
  p.parentNode.insertBefore(b,p.nextSibling);
