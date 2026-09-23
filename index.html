@@ -967,23 +967,34 @@ var css=document.createElement('style');css.textContent=
 '#wakeb{position:fixed;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:98;font:700 10.5px var(--m,monospace);padding:7px 9px;border-radius:99px;border:1px solid #262b34;background:#14171c;color:#98a0ac}'+
 '#wakeb.on{color:#4ea87a;border-color:rgba(78,168,122,.5)}';
 document.head.appendChild(css);
-/* ---------- screen stays on: Wake Lock API + silent looping video fallback (iOS home-screen apps) ---------- */
+/* ---------- screen stays on v3 (23 Sep): re-acquire aggressively + honest status ---------- */
 var WK=true;try{WK=localStorage.getItem('77wake')!=='0'}catch(e){}
-var wl=null,vid=null,wb=document.createElement('button');wb.id='wakeb';document.body.appendChild(wb);
-function wpaint(){var on=WK&&(wl||(vid&&!vid.paused));wb.className=on?'on':'';wb.textContent=WK?(on?'☀ SCREEN ON':'☀ TAP TO KEEP ON'):'🌙 SCREEN CAN SLEEP';}
+var wl=null,vid=null,why='',wb=document.createElement('button');wb.id='wakeb';document.body.appendChild(wb);
+function vok(){return !!(vid&&!vid.paused&&!vid.ended&&vid.readyState>2);}
+function wpaint(){var on=WK&&(wl||vok());wb.className=on?'on':'';
+ wb.textContent=!WK?'\u{1F319} SCREEN CAN SLEEP':(wl?'☀ ON · lock':(vok()?'☀ ON · video':'⚠ WILL SLEEP'+(why?' · '+why:'')));}
 function wakeOn(){ if(!WK)return;
- try{ if('wakeLock' in navigator && !wl) navigator.wakeLock.request('screen').then(function(w){wl=w;w.addEventListener('release',function(){wl=null;wpaint();});wpaint();}).catch(function(){}); }catch(e){}
- try{ if(!vid){vid=document.createElement('video');vid.setAttribute('playsinline','');vid.setAttribute('muted','');vid.muted=true;vid.loop=true;
-   vid.style.cssText='position:fixed;width:1px;height:1px;opacity:0.01;left:0;bottom:0;pointer-events:none';
+ try{ if('wakeLock' in navigator && !wl) navigator.wakeLock.request('screen').then(function(w){
+    wl=w;why='';w.addEventListener('release',function(){wl=null;wpaint();});wpaint();
+   }).catch(function(err){ why=(err&&err.name==='NotAllowedError')?'low power mode?':'no lock'; wpaint(); });
+   else if(!('wakeLock' in navigator)) why='browser has no lock';
+ }catch(e){}
+ try{ if(!vid){vid=document.createElement('video');vid.setAttribute('playsinline','');vid.setAttribute('webkit-playsinline','');
+   vid.setAttribute('muted','');vid.muted=true;vid.loop=true;vid.autoplay=true;vid.setAttribute('autoplay','');
+   /* real layout size: iOS ignores a 1px video when deciding to hold the screen awake */
+   vid.style.cssText='position:fixed;right:2px;bottom:2px;width:64px;height:36px;opacity:0.008;z-index:0;pointer-events:none';
    vid.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMrbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAB9AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAlV0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAfQAAAAAAABAAAAAAHNbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAgABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABeG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAThzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAK/+EAFmdCwArZHsBEAAADAAQAAAMACDxImSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAApAAAAKQAAAABhzdHRzAAAAAAAAAAEAAAACAABAAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAACAAAAAQAAABxzdHN6AAAAAAAAAAAAAAACAAAChgAAAAoAAAAUc3RjbwAAAAAAAAABAAADWwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNTguNzYuMTAwAAAACGZyZWUAAAKYbWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjMgcjMwNjAgNWRiNmFhNiAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjEgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBb///w9FAAFPf4AAAAAGQZo4CvqA';document.body.appendChild(vid);}
    var p=vid.play();if(p&&p.then)p.then(wpaint).catch(function(){});}catch(e){}
  wpaint(); }
-function wakeOff(){ try{if(wl){wl.release();wl=null}}catch(e){} try{if(vid)vid.pause()}catch(e){} wpaint(); }
+function wakeOff(){ try{if(wl){wl.release();wl=null}}catch(e){} try{if(vid)vid.pause()}catch(e){} why='';wpaint(); }
 wb.addEventListener('click',function(e){e.stopPropagation();WK=!WK;try{localStorage.setItem('77wake',WK?'1':'0')}catch(x){} if(WK)wakeOn();else wakeOff();});
-/* any tap re-arms it (browsers only allow this inside a user gesture) */
-document.addEventListener('pointerdown',function(){ if(WK&&!(wl||(vid&&!vid.paused)))wakeOn(); },true);
+/* re-arm on ANY interaction (locks may only be taken inside a user gesture), on return to the app, and on a heartbeat */
+document.addEventListener('pointerdown',function(){ if(WK&&!(wl&&vok()))wakeOn(); },true);
+document.addEventListener('change',function(){ if(WK)wakeOn(); },true);
 document.addEventListener('visibilitychange',function(){ if(!document.hidden&&WK)wakeOn(); });
-wpaint();
+window.addEventListener('focus',function(){ if(WK)wakeOn(); });
+setInterval(function(){ if(WK&&!(wl&&vok()))wakeOn(); else wpaint(); },10000);
+wakeOn();
 /* ---------- the timer ---------- */
 var bar=document.createElement('div');bar.id='rtbar';
 bar.innerHTML='<div class="row"><div class="t" id="rtt">0:00</div><div class="l" id="rtl"></div><button id="rts"></button><button id="rtp">+15s</button><button id="rtx">✕</button></div>';
