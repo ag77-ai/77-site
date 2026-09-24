@@ -1045,7 +1045,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&tic
 </script>
 <script>/* ---- PER-EXERCISE NOTES (22 Sep) — stored in the synced items map as note_<id>; blank = all sets done as written ---- */
 (function(){
-var css=document.createElement('style');css.textContent='.nt{display:block;width:100%;margin:6px 0 2px;padding:9px 10px;border-radius:8px;border:1px solid var(--l,#262b34);background:var(--bg,#0b0d10);color:var(--ink,#eaecef);font:14px/1.3 -apple-system,system-ui,sans-serif}.nt::placeholder{color:#5b636e}.nt.has{border-color:var(--acc,#c8a45c)}.lsf{color:#e0c489}';
+var css=document.createElement('style');css.textContent='.ex input.nt{position:static;opacity:1;width:100%;height:auto;box-sizing:border-box}.nt{display:block;width:100%;margin:6px 0 2px;padding:9px 10px;border-radius:8px;border:1px solid var(--l,#262b34);background:var(--bg,#0b0d10);color:var(--ink,#eaecef);font:14px/1.3 -apple-system,system-ui,sans-serif}.nt::placeholder{color:#5b636e}.nt.has{border-color:var(--acc,#c8a45c)}.lsf{color:#e0c489}';
 document.head.appendChild(css);
 var boxes=[];
 [].forEach.call(document.querySelectorAll('label.ex'),function(ex){
