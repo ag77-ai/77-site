@@ -1223,7 +1223,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--l);color:var(
 <span class="bx"></span><span class="txt"><span class="bdg f">FINISHER</span><b>FINISHER</b><span class="p">10 min EMOM: 15 kettlebell swings at the top of EVERY minute, rest the remainder of the minute</span><span class="c">Go. This is the part that should hurt.</span><span class="w">The last three minutes decide whether that was training or just attendance. It is supposed to be unpleasant. Go.</span></span><a class="v" href="https://www.youtube.com/watch?v=6cXVxLqTQM8" target="_blank" rel="noopener" onclick="event.stopPropagation()">▶</a></label></div><div class="blk pm"><div class="bh">🌆 EVENING &nbsp;·&nbsp; start 10–15 min after you finish Meal 2 &nbsp;·&nbsp; 30 min</div><label class="ex run" for="d31_ew"><input type="checkbox" id="d31_ew" data-d="d31"><span class="bx"></span><span class="txt"><b>Evening walk — 30 min, easy</b><span class="c"><b>Start 10–15 minutes after your last bite of Meal 2.</b> Easy pace — conversational, NOT a fast walk; a full stomach and a hard pace do not mix. Roughly 2.5–3 km. Log it as Outdoor Walk if you like, but the tick is what counts. Rain or no time → walk inside the flat / corridor for 30 min, it still counts.</span><span class="w"><b>~120–150 kcal/day with zero recovery cost</b> — about 0.1 kg of fat a week, on top of the food cut. A walk straight after a meal also blunts the blood-sugar rise from that meal. This is the lever that brings the abs forward.</span></span></label></div></div></details><div class="xp"><button id="xpb">⬇︎  COPY MY WEEK</button><div class="h">One tap. Copies your ticks and open-item states to the clipboard. Paste it into chat on Sunday together with your Apple Health export — that is the whole weekly log.</div></div>
 <div class="rst"><button onclick="resetAll()">Reset all ticks</button></div>
 <footer>77 Performance OS · Day 1 = Sat 12 Sep 2026 · Day 100 = Sun 20 Dec 2026<br>
-Ticks sync across your devices. Build <span id="bld">03 Oct 2026 13:05 IST</span>.<br>
+Ticks sync across your devices. Build <span id="bld">03 Oct 2026 16:11 IST</span>.<br>
 General fitness programming, not medical advice.</footer></div>
 <script>
 /* ---------- GitHub-backed state ----------
@@ -1544,21 +1544,31 @@ function start(ex,btn,rest,n,name){
  btn.textContent='⏱ '+Math.min(k,n)+'/'+n;btn.classList.add('on');
  cur={btn:btn,k:k,n:n,name:name,id:id,last:last};
  end=Date.now()+rest*1000;bar.style.display='block';bar.className='';
- L.innerHTML=last?'<b>All '+n+' sets done — tick it now</b> · '+rest+'s to the next exercise':'<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+rest+'s';
+ L.innerHTML=last?'<b>All '+n+' sets done — tick it now</b> · '+lbl(rest)+' to the next exercise':'<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+lbl(rest);
  scheduleBeeps();tick=setInterval(paint,250);paint();}
 document.getElementById('rtx').addEventListener('click',stop);
 document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;scheduleBeeps();paint();}});
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&tick){paint();scheduleBeeps();}});
+function lbl(s){return (s>=60&&s%60===0)?(s/60)+' min':s+'s';}
+function rx(tx){var r=tx.match(/rest (\d+)\s*(sec|min)/i)||tx.match(/(\d+)\s*(sec|min) rest/i);if(!r)return 0;return parseInt(r[1],10)*(/min/i.test(r[2])?60:1);}
+function mk(ex,host,rest,n,name,key,tag){
+ var proxy=key?{getAttribute:function(){return key;}}:ex;
+ var b=document.createElement('button');b.type='button';b.className='rt';var base='⏱ '+(tag?tag+' · ':'')+lbl(rest);b.textContent=base;
+ b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();start(proxy,b,rest,n,name+(tag?' ('+tag+')':''));});
+ host.parentNode.insertBefore(b,host.nextSibling);
+ var cb=ex.querySelector('input[type=checkbox]');
+ if(cb)cb.addEventListener('change',function(){if(cb.checked){cnt[proxy.getAttribute('for')]=0;b.textContent=base;if(cur&&cur.btn===b&&!cur.last)stop();}});
+ return b;}
 [].forEach.call(document.querySelectorAll('label.ex'),function(ex){
  var p=ex.querySelector('.p');if(!p)return;var tx=p.textContent;
- var r=tx.match(/rest (\d+) sec/i)||tx.match(/(\d+) sec rest/i);if(!r)return;
- var n=tx.match(/(\d+)\s*(sets?|rounds?)/i);n=n?parseInt(n[1],10):1;if(n<2)return;
  var name=(ex.querySelector('.txt > b')||ex.querySelector('b')||{}).textContent||'';
- var b=document.createElement('button');b.type='button';b.className='rt';b.textContent='⏱ '+r[1]+'s';
- b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();start(ex,b,parseInt(r[1],10),n,name);});
- p.parentNode.insertBefore(b,p.nextSibling);
- var cb=ex.querySelector('input[type=checkbox]');
- if(cb)cb.addEventListener('change',function(){if(cb.checked){cnt[ex.getAttribute('for')]=0;b.textContent='⏱ '+r[1]+'s';if(cur&&cur.btn===b&&!cur.last)stop();}});
+ var main=null,rest=rx(tx);
+ var n=tx.match(/(\d+)\s*(sets?|rounds?)/i);n=n?parseInt(n[1],10):1;
+ if(rest&&n>=2)main=mk(ex,p,rest,n,name,null,'');
+ /* warm-up sets described in the card body, e.g. "2 easy sets of 3 as warm-up, 2 min rest" */
+ var c=ex.querySelector('.c');if(!c)return;var ct=c.textContent;
+ var w=ct.match(/(\d+)\s*easy sets?[^.]*?warm-?up[^.]*/i)||ct.match(/warm-?up[^.]*?(\d+)\s*sets?[^.]*/i);
+ if(w){var wr=rx(w[0]);if(wr){mk(ex,p,wr,parseInt(w[1],10),name,ex.getAttribute('for')+'_wu','warm-up');}}
 });
 })();
 </script>
@@ -1584,7 +1594,7 @@ if(typeof applyAll==='function'){var _aa=applyAll;applyAll=function(){_aa();note
 notesPaint();
 })();
 </script><script>/* ---- AUTO-UPDATE (27 Sep): the Mac dock app kept an old copy. On open / return, fetch the live page bypassing cache; if its build id differs, reload once. ---- */
-(function(){var B='1791012950';function chk(){try{if(sessionStorage.getItem('77rl')===B)return;}catch(e){}
+(function(){var B='1791024102';function chk(){try{if(sessionStorage.getItem('77rl')===B)return;}catch(e){}
 fetch(location.href.split('#')[0].split('?')[0]+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/var B='(\d+)'/);
 if(m&&m[1]!==B){try{sessionStorage.setItem('77rl',B);}catch(e){}location.reload();}}).catch(function(){});}
 chk();document.addEventListener('visibilitychange',function(){if(!document.hidden)chk();});})();
