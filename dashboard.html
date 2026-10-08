@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0d10">
+<title>77 — Dashboard</title>
+<style>
+:root{--bg:#0b0d10;--c:#14171c;--l:#262b34;--ink:#eaecef;--i2:#98a0ac;--i3:#69717d;--pm:#c9973f;--g:#4ea87a;--r:#c05a51;--acc:#c8a45c;--m:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,system-ui,sans-serif}
+.w{max-width:1100px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px}
+h1{font:700 20px var(--m);margin:0;letter-spacing:.02em}h1 span{color:var(--acc)}
+a.back,button{font:600 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--i2);background:var(--c);border:1px solid var(--l);border-radius:99px;padding:8px 12px;text-decoration:none;cursor:pointer}
+button:hover,a.back:hover{color:var(--ink);border-color:var(--i3)}
+.meta{font:11px var(--m);color:var(--i3)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--c);border:1px solid var(--l);border-radius:12px;padding:14px;margin-bottom:12px}
+.grid .card{margin-bottom:0}
+.card h2{font:700 11px var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:0 0 10px}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{padding:6px 10px}.tabs button.on{color:var(--bg);background:var(--acc);border-color:var(--acc)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.cols{grid-template-columns:1fr}}
+.cols h3{font:700 10.5px var(--m);letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px}
+.up h3{color:var(--g)}.dn h3{color:var(--r)}
+ol{margin:0;padding-left:20px}li{margin:3px 0}li.n{list-style:none;color:var(--i3)}
+.up li::marker{color:var(--g)}.dn li::marker{color:var(--r)}
+table{width:100%;border-collapse:collapse;font:12px var(--m)}
+th,td{text-align:right;padding:5px 4px;border-bottom:1px solid var(--l)}
+th:first-child,td:first-child{text-align:left;color:var(--i2)}th{color:var(--i3);font-weight:600}
+td.now{color:var(--ink);font-weight:700}
+.chip{display:inline-block;font:700 10px var(--m);padding:3px 8px;border-radius:99px;border:1px solid}
+.chip.g{color:var(--g);border-color:rgba(78,168,122,.5)}.chip.r{color:var(--r);border-color:rgba(192,90,81,.5)}.chip.n{color:var(--i2);border-color:var(--l)}
+.sub{font:11px var(--m);color:var(--i3);margin:-4px 0 8px}
+.kv{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:560px){.kv{grid-template-columns:repeat(2,1fr)}}
+.kv div{border:1px solid var(--l);border-radius:8px;padding:8px}
+.kv b{display:block;font:700 17px var(--m)}.kv small{font:10.5px var(--m);color:var(--i3)}.kv i{font:600 10.5px var(--m);font-style:normal}
+svg{width:100%;height:auto;display:block}
+svg text{font:10px var(--m);fill:var(--i3)}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font:10.5px var(--m);color:var(--i2);margin-top:4px}
+.lg s{display:inline-block;width:10px;height:3px;margin-right:5px;vertical-align:middle;text-decoration:none}
+#tok{display:none}
+#tok input{width:100%;padding:10px;border-radius:8px;border:1px solid var(--l);background:var(--bg);color:var(--ink);font:12px var(--m);margin:8px 0}
+.err{color:var(--r);font:12px var(--m)}
+</style></head><body><div class="w">
+<header><h1>77 <span>Dashboard</span></h1>
+<div><span class="meta" id="gen">loading…</span> <button id="rf">Refresh</button> <a class="back" href="./">← Tracker</a></div></header>
+<div class="card" id="tok"><h2>Connect this device</h2>
+<div>Paste your GitHub token once (same one the tracker uses). It stays in this browser only.</div>
+<input id="tokin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
+<button id="toksave">Save &amp; load</button></div>
+<div id="err" class="err"></div>
+<div id="app"></div>
+</div>
+<script>
+var GK='77gh',T='';try{T=localStorage.getItem(GK)||''}catch(e){}
+var $=function(i){return document.getElementById(i)};
+function gh(p){return fetch('https://api.github.com/repos/ag77-ai/77-state/contents/dash/'+p,{headers:{Authorization:'Bearer '+T,Accept:'application/vnd.github.raw'},cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(p+' → HTTP '+r.status);return r.text()})}
+function csv(t){var L=t.trim().split('\n'),h=L[0].split(',');return L.slice(1).map(function(l){var c=l.split(','),o={};h.forEach(function(k,i){o[k]=c[i]});return o})}
+function num(v){var x=parseFloat(v);return isNaN(x)?null:x}
+function pf(p){if(p==null)return'—';var m=Math.floor(p),s=Math.round((p-m)*60);if(s==60){m++;s=0}return m+':'+(s<10?'0':'')+s}
+function fx(v,d){return v==null?'—':(+v).toFixed(d==null?1:d)}
+function dt(s){return new Date(s.slice(0,10)+'T00:00:00').getTime()}
+function dlab(t){return new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+
+/* ---------- charts (inline SVG) ---------- */
+function lineChart(o){ // o.series:[{pts:[[t,y]],color,dots,label}], o.fy fmt, o.inv
+ var W=640,H=190,L=40,R=10,Tp=10,B=22,all=[];
+ o.series.forEach(function(s){all=all.concat(s.pts)});
+ if(!all.length)return'<div class="meta">no data</div>';
+ var x0=Math.min.apply(0,all.map(function(p){return p[0]})),x1=Math.max.apply(0,all.map(function(p){return p[0]}));
+ var ys=all.map(function(p){return p[1]}).sort(function(a,b){return a-b}),y0=ys[0],y1=ys[ys.length-1];if(o.clip&&ys.length>20){y0=ys[Math.floor(ys.length*.03)];y1=ys[Math.floor(ys.length*.97)]}
+ if(o.ymin!=null)y0=Math.min(y0,o.ymin);if(y1==y0){y1+=1;y0-=1}var pad=(y1-y0)*.08;y0-=pad;y1+=pad;if(x1==x0)x1+=864e5;
+ var X=function(t){return L+(t-x0)/(x1-x0)*(W-L-R)},Y=function(v){v=Math.max(y0,Math.min(y1,v));var f=(v-y0)/(y1-y0);if(o.inv)f=1-f;return Tp+(1-f)*(H-Tp-B)};
+ var g='';for(var i=0;i<=3;i++){var v=y0+(y1-y0)*i/3,yy=Y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="#262b34"/><text x="'+(L-5)+'" y="'+(yy+3)+'" text-anchor="end">'+o.fy(v)+'</text>'}
+ for(i=0;i<=2;i++){var t=x0+(x1-x0)*i/2;g+='<text x="'+X(t)+'" y="'+(H-6)+'" text-anchor="'+(i==0?'start':i==2?'end':'middle')+'">'+dlab(t)+'</text>'}
+ o.series.forEach(function(s){
+  if(s.line!==false&&s.pts.length>1)g+='<polyline fill="none" stroke="'+s.color+'" stroke-width="'+(s.w||2)+'" stroke-linejoin="round" points="'+s.pts.map(function(p){return X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)}).join(' ')+'"/>';
+  if(s.dots)s.pts.forEach(function(p){g+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="'+(s.r||2.5)+'" fill="'+(p[2]||s.color)+'"><title>'+dlab(p[0])+' · '+o.fy(p[1])+'</title></circle>'});
+ });
+ var lg=o.series.filter(function(s){return s.label}).map(function(s){return'<span><s style="background:'+s.color+'"></s>'+s.label+'</span>'}).join('');
+ return'<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg>'+(lg?'<div class="lg">'+lg+'</div>':'');
+}
+function barChart(rows,key,avgN,color){
+ var W=640,H=190,L=44,R=10,Tp=10,B=22,n=rows.length;if(!n)return'';
+ var v=rows.map(function(r){return num(r[key])||0}),mx=Math.max.apply(0,v)*1.08||1,bw=(W-L-R)/n;
+ var Y=function(x){return Tp+(1-x/mx)*(H-Tp-B)},g='';
+ for(var i=0;i<=3;i++){var val=mx*i/3,yy=Y(val);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="#262b34"/><text x="'+(L-5)+'" y="'+(yy+3)+'" text-anchor="end">'+(val>=1000?(val/1000).toFixed(0)+'k':val.toFixed(0))+'</text>'}
+ v.forEach(function(x,i){g+='<rect x="'+(L+i*bw+.5).toFixed(1)+'" y="'+Y(x).toFixed(1)+'" width="'+Math.max(bw-1,1).toFixed(1)+'" height="'+(H-B-Y(x)).toFixed(1)+'" fill="'+color+'" opacity=".55"><title>'+rows[i].date+' · '+Math.round(x)+'</title></rect>'});
+ var pts=[];v.forEach(function(x,i){if(i>=avgN-1){var s=0;for(var j=i-avgN+1;j<=i;j++)s+=v[j];pts.push((L+i*bw+bw/2).toFixed(1)+','+Y(s/avgN).toFixed(1))}});
+ g+='<polyline fill="none" stroke="#eaecef" stroke-width="2" points="'+pts.join(' ')+'"/>';
+ g+='<text x="'+L+'" y="'+(H-6)+'">'+dlab(dt(rows[0].date))+'</text><text x="'+(W-R)+'" y="'+(H-6)+'" text-anchor="end">'+dlab(dt(rows[n-1].date))+'</text>';
+ return'<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg><div class="lg"><span><s style="background:'+color+'"></s>daily</span><span><s style="background:#eaecef"></s>'+avgN+'-day avg</span></div>';
+}
+
+/* ---------- cards ---------- */
+function ud(list){ // split improved / not
+ var u=[],d=[];(list||[]).forEach(function(x){if(x[0]=='up')u.push(x[1]);else if(x[0]=='down')d.push(x[1])});
+ var f=function(a,e){return a.length?a.map(function(t){return'<li>'+esc(t)+'</li>'}).join(''):'<li class="n">'+e+'</li>'};
+ return'<div class="cols"><div class="up"><h3>Improved ('+u.length+')</h3><ol>'+f(u,'nothing yet')+'</ol></div><div class="dn"><h3>Not improved ('+d.length+')</h3><ol>'+f(d,'nothing slipped')+'</ol></div></div>';
+}
+function wcard(name,w){
+ if(!w||!w.latest)return'<div class="card"><h2>'+name+'</h2><div class="meta">no data</div></div>';
+ var l=w.latest,bo=w.benchmark=='best-of';
+ var row=function(lab,m,f,lowBetter,hasBest){
+  var n=m.now,l10=m.last10,b=hasBest?m.best:null,bs=hasBest?m.best_since:null;
+  return'<tr><td>'+lab+'</td><td class="now">'+f(n)+'</td><td>'+f(l10)+'</td><td>'+f(m.median)+'</td>'+(hasBest?'<td>'+f(b)+'</td><td>'+f(bs)+'</td>':'<td>—</td><td>—</td>')+'<td>'+(m.pctile!=null?m.pctile+'%':'—')+'</td></tr>'};
+ var p=w.pace,vs=p.now<p.last10;
+ return'<div class="card"><h2>Latest '+name+' vs history</h2>'
+ +'<div class="sub">'+l.start.slice(0,16)+' · '+fx(l.km,2)+' km · '+fx(l.min,0)+' min · '+fx(l.kcal,0)+' kcal · history n='+w.n_hist+' (since Oct 2023) · benchmark: '+(bo?'best-of':'median')+'</div>'
+ +'<table><tr><th></th><th>Now</th><th>Last 10</th><th>Median</th><th>Best</th><th>Best since 11 Sep</th><th>Pctile</th></tr>'
+ +row('Pace /km',w.pace,pf,true,true)+row('kcal/min',w.kcal_min,function(x){return fx(x,1)},false,true)+row('Avg HR',w.avg_hr,function(x){return fx(x,0)},false,false)+'</table>'
+ +'<div style="margin-top:8px"><span class="chip '+(vs?'g':'r')+'">Pace '+(vs?'faster':'slower')+' than last-10 avg by '+pf(Math.abs(p.last10-p.now))+'/km</span> <span class="chip '+(p.now<=p.best?'g':'n')+'">'+(p.now<=p.best?'NEW ALL-TIME BEST':'best '+pf(p.best)+', gap '+pf(p.now-p.best))+'</span></div></div>';
+}
+function delta(a,b,d,unit){var x=(a-b)/b*100;return'<i style="color:'+(x>=0?'var(--g)':'var(--r)')+'">'+(x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(0)+'% vs prev</i>'}
+function actCard(a){
+ var k=function(l,key,d,sc){var c=a.last7[key],p=a.prev7[key];return'<div><small>'+l+'</small><b>'+(sc?(c/1000).toFixed(1)+'k':fx(c,d))+'</b>'+delta(c,p)+'</div>'};
+ var ld=a.last_day,pd=a.prev_day;
+ return'<div class="card"><h2>Activity · last 7 days vs previous 7</h2><div class="kv">'+k('Steps','steps',0,1)+k('Distance km','km',1)+k('Active kcal','active_kcal',0)+k('Exercise min','exercise_min',0)+'</div>'
+ +'<div class="sub" style="margin-top:10px">'+ld.date+' <b>so far</b> (export time): '+fx(ld.steps,0)+' steps · '+fx(ld.dist_km,1)+' km · '+fx(ld.active_kcal,0)+' kcal · '+fx(ld.exercise_min,0)+' min &nbsp;|&nbsp; '+pd.date+': '+fx(pd.steps,0)+' steps · '+fx(pd.dist_km,1)+' km · '+fx(pd.active_kcal,0)+' kcal · '+fx(pd.exercise_min,0)+' min</div></div>';
+}
+
+function render(S,B,D,Wk){
+ $('gen').textContent='Synced '+S.generated.replace('T',' ').slice(0,16);
+ var tabs=[['dod','Day-on-day'],['wow','Week-on-week'],['vs_base','Since 15 Sep']],cur='dod';
+ var h='<div class="card"><h2>Body · improved / not improved</h2><div class="tabs" id="tabs"></div><div id="ud"></div></div>';
+ h+=actCard(S.activity);
+ h+='<div class="grid">'+wcard('run',S.workouts.run)+wcard('walk',S.workouts.walk)+'</div><div style="height:12px"></div>';
+ h+='<div class="grid"><div class="card"><h2>Weight (kg)</h2><div id="c1"></div></div><div class="card"><h2>Body fat %</h2><div id="c2"></div></div>'
+  +'<div class="card"><h2>Lean &amp; muscle mass (kg)</h2><div id="c3"></div></div><div class="card"><h2>Fat mass &amp; visceral</h2><div id="c4"></div></div>'
+  +'<div class="card"><h2>Steps · last 90 days</h2><div id="c5"></div></div><div class="card"><h2>Active kcal · last 90 days</h2><div id="c6"></div></div>'
+  +'<div class="card"><h2>Run pace /km · faster = higher</h2><div id="c7"></div></div><div class="card"><h2>Walk pace /km · faster = higher</h2><div id="c8"></div></div></div>';
+ $('app').innerHTML=h;
+ var show=function(){$('ud').innerHTML=ud(S.body[cur]);$('tabs').innerHTML=tabs.map(function(t){return'<button data-k="'+t[0]+'" class="'+(t[0]==cur?'on':'')+'">'+t[1]+'</button>'}).join('');
+  Array.prototype.forEach.call($('tabs').children,function(b){b.onclick=function(){cur=b.dataset.k;show()}})};show();
+ var bp=function(k){return B.map(function(r){return[dt(r.date)+ (Date.parse(r.ts.replace(' ','T'))-dt(r.date)),num(r[k])]}).filter(function(p){return p[1]!=null})};
+ var f1=function(v){return v.toFixed(1)};
+ $('c1').innerHTML=lineChart({fy:f1,series:[{pts:bp('weight'),color:'#c8a45c',dots:1}]});
+ $('c2').innerHTML=lineChart({fy:f1,series:[{pts:bp('fat_pct'),color:'#4ea87a',dots:1}]});
+ $('c3').innerHTML=lineChart({fy:f1,series:[{pts:bp('lean_kg'),color:'#4ea87a',dots:1,label:'Lean'},{pts:bp('muscle_kg'),color:'#7aa7d9',dots:1,label:'Muscle'}]});
+ $('c4').innerHTML=lineChart({fy:f1,series:[{pts:bp('fat_kg'),color:'#c05a51',dots:1,label:'Fat kg'},{pts:bp('visceral'),color:'#c9973f',dots:1,label:'Visceral'}]});
+ var dl=D.slice(-90);$('c5').innerHTML=barChart(dl,'steps',7,'#7aa7d9');$('c6').innerHTML=barChart(dl,'active_kcal',7,'#c9973f');
+ var cut=dt('2026-09-11'),wp=function(type){var P=Wk.filter(function(w){return w.type==type&&num(w.pace)}).map(function(w){var t=Date.parse(w.start.replace(' ','T'));return[t,num(w.pace),t>=cut?'#4ea87a':'#69717d']});
+  var rec=P.filter(function(p){return p[0]>=cut});return[{pts:P,color:'#69717d',dots:1,line:false,r:2.2,label:'History'},{pts:rec,color:'#4ea87a',dots:1,line:false,r:3.2,label:'Since 11 Sep'}]};
+ $('c7').innerHTML=lineChart({fy:pf,inv:1,clip:1,series:wp('run')});$('c8').innerHTML=lineChart({fy:pf,inv:1,clip:1,series:wp("walk")});
+}
+function load(){
+ $('err').textContent='';$('gen').textContent='loading…';
+ if(!T){$('tok').style.display='block';$('gen').textContent='not connected';return}
+ $('tok').style.display='none';
+ Promise.all([gh('summary.json'),gh('body.csv'),gh('daily.csv'),gh('workouts.csv')]).then(function(r){
+  render(JSON.parse(r[0]),csv(r[1]),csv(r[2]),csv(r[3]));
+ }).catch(function(e){$('err').textContent='Could not load: '+e.message+(/40[13]/.test(e.message)?' — token missing/expired. Re-paste it below.':'');if(/40[13]/.test(e.message)){$('tok').style.display='block'}$('gen').textContent='error'});
+}
+$('rf').onclick=load;
+$('toksave').onclick=function(){var v=$('tokin').value.trim();if(v){T=v;try{localStorage.setItem(GK,v)}catch(e){}load()}};
+load();
+</script></body></html>
