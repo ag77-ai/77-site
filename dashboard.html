@@ -46,12 +46,13 @@ svg text{font:10px var(--m);fill:var(--i3)}
 .err{color:var(--r);font:12px var(--m)}
 </style></head><body><div class="w">
 <header><h1>77 <span>Dashboard</span></h1>
-<div><span class="meta" id="gen">loading…</span> <button id="rf">Refresh</button> <a class="back" href="./" style="color:var(--acc);border-color:var(--acc)">← Back to exercises</a></div></header>
+<div><span class="meta" id="gen">loading…</span> <button id="rf">Refresh</button> <button id="cp" style="color:var(--acc);border-color:var(--acc)">Copy for Claude</button> <a class="back" href="./" style="color:var(--acc);border-color:var(--acc)">← Back to exercises</a></div></header>
 <div class="card" id="tok"><h2>Connect this device</h2>
 <div>Paste your GitHub token once (same one the tracker uses). It stays in this browser only.</div>
 <input id="tokin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
 <button id="toksave">Save &amp; load</button></div>
 <div id="err" class="err"></div>
+<div class="card" id="cpbox" style="display:none"><h2>Copy for Claude</h2><div class="meta">Clipboard blocked. Click inside, press Cmd+A then Cmd+C.</div><textarea id="cpta" readonly style="width:100%;height:340px;margin-top:8px;background:var(--bg);color:var(--ink);border:1px solid var(--l);border-radius:8px;padding:10px;font:12px var(--m)"></textarea></div>
 <div id="app"></div>
 </div>
 <script>
@@ -147,12 +148,39 @@ function render(S,B,D,Wk){
   var rec=P.filter(function(p){return p[0]>=cut});return[{pts:P,color:'#69717d',dots:1,line:false,r:2.2,label:'History'},{pts:rec,color:'#4ea87a',dots:1,line:false,r:3.2,label:'Since 11 Sep'}]};
  $('c7').innerHTML=lineChart({fy:pf,inv:1,clip:1,series:wp('run')});$('c8').innerHTML=lineChart({fy:pf,inv:1,clip:1,series:wp("walk")});
 }
+
+/* ---------- Copy for Claude (built in browser, zero Claude usage) ---------- */
+var LAST=null;
+function ln(a){return a.length?a.map(function(t,i){return'   '+'abcdefghij'[i]+'. '+t[1]}).join('\n'):'   a. none'}
+function buildText(S,B,D,Wk){
+ var b=S.body,l=b.last,pr=b.prev,wk=b.week_ref,bs=b.base,a=S.activity,L=[];
+ var day=Math.round((dt(l.date)-dt('2026-09-12'))/864e5)+1;
+ var bl=function(r){return r.weight+' kg · fat '+r.fat_pct+'% ('+r.fat_kg+' kg) · lean '+r.lean_kg+' · muscle '+r.muscle_kg+' · water '+r.water_kg+' · visceral '+r.visceral};
+ L.push('77 STATUS · '+l.date+' · Day '+day+' of 100 (synced '+S.generated.replace('T',' ').slice(0,16)+')','');
+ L.push('1. BODY NOW (Cult scale '+l.ts.slice(11,16)+')','   a. '+bl(l),'   b. prev '+pr.date+': '+bl(pr),'   c. week ago '+wk.date+': '+wk.weight+' kg · fat '+wk.fat_pct+'%','   d. since 15 Sep: '+bs.weight+' kg · fat '+bs.fat_pct+'%','');
+ var u=function(x){return(x||[]).filter(function(y){return y[0]=='up'})},d=function(x){return(x||[]).filter(function(y){return y[0]=='down'})};
+ L.push('2. IMPROVED / NOT (day-on-day)','   IMPROVED:',ln(u(b.dod)),'   NOT IMPROVED:',ln(d(b.dod)),'');
+ L.push('3. IMPROVED / NOT (week-on-week)','   IMPROVED:',ln(u(b.wow)),'   NOT IMPROVED:',ln(d(b.wow)),'');
+ L.push('4. SINCE 15 SEP','   IMPROVED:',ln(u(b.vs_base)),'   NOT IMPROVED:',ln(d(b.vs_base)),'');
+ var pc=function(c,p){return(p?((c-p)/p*100>=0?'+':'')+((c-p)/p*100).toFixed(0)+'%':'—')};
+ L.push('5. ACTIVITY last 7 vs prev 7','   a. steps '+a.last7.steps+' ('+pc(a.last7.steps,a.prev7.steps)+') · km '+fx(a.last7.km,1)+' ('+pc(a.last7.km,a.prev7.km)+')','   b. active kcal '+Math.round(a.last7.active_kcal)+' ('+pc(a.last7.active_kcal,a.prev7.active_kcal)+') · exercise min '+Math.round(a.last7.exercise_min)+' ('+pc(a.last7.exercise_min,a.prev7.exercise_min)+')','   c. '+a.last_day.date+' so far: '+a.last_day.steps+' steps · '+a.last_day.exercise_min+' min','');
+ var n=6;['run','walk'].forEach(function(k){var w=S.workouts[k];if(!w||!w.latest)return;var x=w.latest,p=w.pace,h=w.avg_hr;
+  L.push(n+'. LATEST '+k.toUpperCase()+' '+x.start.slice(0,16)+' · '+fx(x.km,2)+' km · '+fx(x.min,0)+' min','   a. pace '+pf(p.now)+'/km vs last10 '+pf(p.last10)+' · median '+pf(p.median)+' · best '+pf(p.best)+' · since 11 Sep best '+pf(p.best_since)+' · pctile '+p.pctile+'%','   b. kcal/min '+fx(w.kcal_min.now,1)+' (median '+fx(w.kcal_min.median,1)+') · avg HR '+fx(h.now,0)+' (median '+fx(h.median,0)+')','');n++});
+ L.push(n+'. OPEN ITEMS','   a. see current_state.md; add today\'s question below','');
+ return L.join('\n');
+}
+function copyTxt(){
+ if(!LAST)return;var t=buildText(LAST[0],LAST[1],LAST[2],LAST[3]),ok=function(){$('cp').textContent='Copied ✓';setTimeout(function(){$('cp').textContent='Copy for Claude'},1800);$('cpbox').style.display='none'},
+ fb=function(){$('cpbox').style.display='block';var ta=$('cpta');ta.value=t;ta.focus();ta.select()};
+ try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}
+}
+$('cp').onclick=copyTxt;
 function load(){
  $('err').textContent='';$('gen').textContent='loading…';
  if(!T){$('tok').style.display='block';$('gen').textContent='not connected';return}
  $('tok').style.display='none';
  Promise.all([gh('summary.json'),gh('body.csv'),gh('daily.csv'),gh('workouts.csv')]).then(function(r){
-  render(JSON.parse(r[0]),csv(r[1]),csv(r[2]),csv(r[3]));
+  LAST=[JSON.parse(r[0]),csv(r[1]),csv(r[2]),csv(r[3])];render(LAST[0],LAST[1],LAST[2],LAST[3]);
  }).catch(function(e){$('err').textContent='Could not load: '+e.message+(/40[13]/.test(e.message)?' — token missing/expired. Re-paste it below.':'');if(/40[13]/.test(e.message)){$('tok').style.display='block'}$('gen').textContent='error'});
 }
 $('rf').onclick=load;
