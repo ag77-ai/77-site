@@ -8,7 +8,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,system-ui,sans-serif}
 .w{max-width:1100px;margin:0 auto;padding:16px}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px}
+header{position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0;margin-top:-16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px}
 h1{font:700 20px var(--m);margin:0;letter-spacing:.02em}h1 span{color:var(--acc)}
 a.back,button{font:600 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--i2);background:var(--c);border:1px solid var(--l);border-radius:99px;padding:8px 12px;text-decoration:none;cursor:pointer}
 button:hover,a.back:hover{color:var(--ink);border-color:var(--i3)}
@@ -46,7 +46,7 @@ svg text{font:10px var(--m);fill:var(--i3)}
 .err{color:var(--r);font:12px var(--m)}
 </style></head><body><div class="w">
 <header><h1>77 <span>Dashboard</span></h1>
-<div><span class="meta" id="gen">loading…</span> <button id="rf">Refresh</button> <a class="back" href="./">← Tracker</a></div></header>
+<div><span class="meta" id="gen">loading…</span> <button id="rf">Refresh</button> <a class="back" href="./" style="color:var(--acc);border-color:var(--acc)">← Back to exercises</a></div></header>
 <div class="card" id="tok"><h2>Connect this device</h2>
 <div>Paste your GitHub token once (same one the tracker uses). It stays in this browser only.</div>
 <input id="tokin" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
