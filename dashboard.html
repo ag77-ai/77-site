@@ -44,6 +44,25 @@ svg text{font:10px var(--m);fill:var(--i3)}
 #tok{display:none}
 #tok input{width:100%;padding:10px;border-radius:8px;border:1px solid var(--l);background:var(--bg);color:var(--ink);font:12px var(--m);margin:8px 0}
 .err{color:var(--r);font:12px var(--m)}
+
+.act{display:grid;grid-template-columns:22px 62px 1fr;gap:8px;align-items:start;padding:9px 0;border-bottom:1px solid var(--l)}
+.act:last-child{border-bottom:0}
+.act .no{font:700 12px var(--m);color:var(--i3);padding-top:2px}
+.act .hd{font:700 12px var(--m);color:var(--ink)}
+.act .tx{color:var(--i2);font-size:13px;margin-top:1px}
+.act .ac{color:var(--acc);font-size:13px;margin-top:3px;font-weight:600}
+.v{display:inline-block;font:700 10px var(--m);letter-spacing:.06em;padding:3px 0;border-radius:99px;border:1px solid;width:58px;text-align:center}
+.v.g{color:var(--g);border-color:rgba(78,168,122,.6);background:rgba(78,168,122,.1)}
+.v.a{color:#d9a441;border-color:rgba(217,164,65,.6);background:rgba(217,164,65,.1)}
+.v.r{color:var(--r);border-color:rgba(192,90,81,.6);background:rgba(192,90,81,.1)}
+.ins{font:600 13px/1.4 -apple-system,system-ui,sans-serif;color:var(--ink);border-left:3px solid var(--acc);padding:2px 0 2px 10px;margin:0 0 10px}
+.tw{overflow-x:auto}
+.tw table td,.tw table th{white-space:nowrap}
+td.g{color:var(--g)}td.a{color:#d9a441}td.r{color:var(--r)}
+.span2{grid-column:1/-1}
+.kv i{color:var(--i3)}
+.cnt{font:11px var(--m);color:var(--i3);margin-left:8px;letter-spacing:0;text-transform:none}
+@media(max-width:560px){.act{grid-template-columns:20px 58px 1fr;gap:6px}}
 </style></head><body><div class="w">
 <header><h1>77 <span>Dashboard</span></h1>
 <div><span class="meta" id="gen">loading…</span> <button id="rf">Refresh</button> <button id="cp" style="color:var(--acc);border-color:var(--acc)">Copy for Claude</button> <a class="back" href="./" style="color:var(--acc);border-color:var(--acc)">← Back to exercises</a></div></header>
@@ -59,118 +78,180 @@ svg text{font:10px var(--m);fill:var(--i3)}
 var GK='77gh',T='';try{T=localStorage.getItem(GK)||''}catch(e){}
 var $=function(i){return document.getElementById(i)};
 function gh(p){return fetch('https://api.github.com/repos/ag77-ai/77-state/contents/dash/'+p,{headers:{Authorization:'Bearer '+T,Accept:'application/vnd.github.raw'},cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(p+' → HTTP '+r.status);return r.text()})}
-function csv(t){var L=t.trim().split('\n'),h=L[0].split(',');return L.slice(1).map(function(l){var c=l.split(','),o={};h.forEach(function(k,i){o[k]=c[i]});return o})}
-function num(v){var x=parseFloat(v);return isNaN(x)?null:x}
 function pf(p){if(p==null)return'—';var m=Math.floor(p),s=Math.round((p-m)*60);if(s==60){m++;s=0}return m+':'+(s<10?'0':'')+s}
 function fx(v,d){return v==null?'—':(+v).toFixed(d==null?1:d)}
-function dt(s){return new Date(s.slice(0,10)+'T00:00:00').getTime()}
-function dlab(t){return new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
 function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+var WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dayDate(n){var d=new Date(Date.UTC(2026,8,11+n));return WD[d.getUTCDay()]+' '+('0'+d.getUTCDate()).slice(-2)+' '+MO[d.getUTCMonth()]}
+function dayLab(n){return'Day '+n+' · '+dayDate(n)}
+function istDay(){var s=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(new Date());return Math.round((Date.parse(s+'T00:00:00Z')-Date.UTC(2026,8,11))/864e5)}
+var VC={g:'GREEN',a:'AMBER',r:'RED'};
 
-/* ---------- charts (inline SVG) ---------- */
-function lineChart(o){ // o.series:[{pts:[[t,y]],color,dots,label}], o.fy fmt, o.inv
- var W=640,H=190,L=40,R=10,Tp=10,B=22,all=[];
- o.series.forEach(function(s){all=all.concat(s.pts)});
- if(!all.length)return'<div class="meta">no data</div>';
- var x0=Math.min.apply(0,all.map(function(p){return p[0]})),x1=Math.max.apply(0,all.map(function(p){return p[0]}));
- var ys=all.map(function(p){return p[1]}).sort(function(a,b){return a-b}),y0=ys[0],y1=ys[ys.length-1];if(o.clip&&ys.length>20){y0=ys[Math.floor(ys.length*.03)];y1=ys[Math.floor(ys.length*.97)]}
- if(o.ymin!=null)y0=Math.min(y0,o.ymin);if(y1==y0){y1+=1;y0-=1}var pad=(y1-y0)*.08;y0-=pad;y1+=pad;if(x1==x0)x1+=864e5;
- var X=function(t){return L+(t-x0)/(x1-x0)*(W-L-R)},Y=function(v){v=Math.max(y0,Math.min(y1,v));var f=(v-y0)/(y1-y0);if(o.inv)f=1-f;return Tp+(1-f)*(H-Tp-B)};
- var g='';for(var i=0;i<=3;i++){var v=y0+(y1-y0)*i/3,yy=Y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="#262b34"/><text x="'+(L-5)+'" y="'+(yy+3)+'" text-anchor="end">'+o.fy(v)+'</text>'}
- for(i=0;i<=2;i++){var t=x0+(x1-x0)*i/2;g+='<text x="'+X(t)+'" y="'+(H-6)+'" text-anchor="'+(i==0?'start':i==2?'end':'middle')+'">'+dlab(t)+'</text>'}
- o.series.forEach(function(s){
-  if(s.line!==false&&s.pts.length>1)g+='<polyline fill="none" stroke="'+s.color+'" stroke-width="'+(s.w||2)+'" stroke-linejoin="round" points="'+s.pts.map(function(p){return X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)}).join(' ')+'"/>';
-  if(s.dots)s.pts.forEach(function(p){g+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="'+(s.r||2.5)+'" fill="'+(p[2]||s.color)+'"><title>'+dlab(p[0])+' · '+o.fy(p[1])+'</title></circle>'});
- });
- var lg=o.series.filter(function(s){return s.label}).map(function(s){return'<span><s style="background:'+s.color+'"></s>'+s.label+'</span>'}).join('');
+/* ---------- chart engine (inline SVG) ---------- */
+function plot(o){
+ var W=640,H=o.H||230,L=46,R=14,Tp=12,Bt=26,x0=o.x0,x1=o.x1,y0=o.y0,y1=o.y1;
+ var X=function(v){return L+(v-x0)/(x1-x0)*(W-L-R)},Y=function(v){v=Math.max(y0,Math.min(y1,v));var f=(v-y0)/(y1-y0);if(o.inv)f=1-f;return Tp+(1-f)*(H-Tp-Bt)};
+ var g='',i;
+ for(i=0;i<=4;i++){var v=y0+(y1-y0)*i/4,yy=Y(v);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy.toFixed(1)+'" y2="'+yy.toFixed(1)+'" stroke="#262b34"/><text x="'+(L-6)+'" y="'+(yy+3).toFixed(1)+'" text-anchor="end">'+o.fy(v)+'</text>'}
+ (o.xt||[]).forEach(function(t){g+='<text x="'+X(t[0]).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle">'+t[1]+'</text>'});
+ (o.bands||[]).forEach(function(b){var ya=Y(b.a),yb=Y(b.b);g+='<rect x="'+L+'" y="'+Math.min(ya,yb).toFixed(1)+'" width="'+(W-L-R)+'" height="'+Math.abs(yb-ya).toFixed(1)+'" fill="'+b.c+'" opacity=".16"/><text x="'+(L+6)+'" y="'+(Math.min(ya,yb)+11).toFixed(1)+'" style="fill:'+b.c+'">'+b.t+'</text>'});
+ (o.hl||[]).forEach(function(h){var yy=Y(h.y);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy.toFixed(1)+'" y2="'+yy.toFixed(1)+'" stroke="'+h.c+'" stroke-width="1.3" stroke-dasharray="'+(h.d||'5 4')+'"/><text x="'+(W-R-2)+'" y="'+(yy-4).toFixed(1)+'" text-anchor="end" style="fill:'+h.c+'">'+h.t+'</text>'});
+ (o.vl||[]).forEach(function(h){var xx=X(h.x);g+='<line x1="'+xx.toFixed(1)+'" x2="'+xx.toFixed(1)+'" y1="'+Tp+'" y2="'+(H-Bt)+'" stroke="#69717d" stroke-dasharray="2 3"/><text x="'+xx.toFixed(1)+'" y="'+(Tp+9)+'" text-anchor="middle">'+h.t+'</text>'});
+ (o.lines||[]).forEach(function(l){if(l.pts.length>1)g+='<polyline fill="none" stroke="'+l.c+'" stroke-width="'+(l.w||2)+'" stroke-linejoin="round" stroke-linecap="round"'+(l.d?' stroke-dasharray="'+l.d+'"':'')+(l.o?' opacity="'+l.o+'"':'')+' points="'+l.pts.map(function(p){return X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)}).join(' ')+'"/>'});
+ (o.dots||[]).forEach(function(s){s.pts.forEach(function(p){g+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="'+(s.r||3)+'" fill="'+(p[2]||s.c)+'" opacity="'+(s.o==null?1:s.o)+'"><title>'+esc(p[3]||o.fy(p[1]))+'</title></circle>'})});
+ var lg=(o.lg||[]).map(function(s){return'<span><s style="background:'+s[0]+(s[2]?';height:8px;width:8px;border-radius:50%':'')+'"></s>'+s[1]+'</span>'}).join('');
  return'<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg>'+(lg?'<div class="lg">'+lg+'</div>':'');
 }
-function barChart(rows,key,avgN,color){
- var W=640,H=190,L=44,R=10,Tp=10,B=22,n=rows.length;if(!n)return'';
- var v=rows.map(function(r){return num(r[key])||0}),mx=Math.max.apply(0,v)*1.08||1,bw=(W-L-R)/n;
- var Y=function(x){return Tp+(1-x/mx)*(H-Tp-B)},g='';
- for(var i=0;i<=3;i++){var val=mx*i/3,yy=Y(val);g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="#262b34"/><text x="'+(L-5)+'" y="'+(yy+3)+'" text-anchor="end">'+(val>=1000?(val/1000).toFixed(0)+'k':val.toFixed(0))+'</text>'}
- v.forEach(function(x,i){g+='<rect x="'+(L+i*bw+.5).toFixed(1)+'" y="'+Y(x).toFixed(1)+'" width="'+Math.max(bw-1,1).toFixed(1)+'" height="'+(H-B-Y(x)).toFixed(1)+'" fill="'+color+'" opacity=".55"><title>'+rows[i].date+' · '+Math.round(x)+'</title></rect>'});
- var pts=[];v.forEach(function(x,i){if(i>=avgN-1){var s=0;for(var j=i-avgN+1;j<=i;j++)s+=v[j];pts.push((L+i*bw+bw/2).toFixed(1)+','+Y(s/avgN).toFixed(1))}});
- g+='<polyline fill="none" stroke="#eaecef" stroke-width="2" points="'+pts.join(' ')+'"/>';
- g+='<text x="'+L+'" y="'+(H-6)+'">'+dlab(dt(rows[0].date))+'</text><text x="'+(W-R)+'" y="'+(H-6)+'" text-anchor="end">'+dlab(dt(rows[n-1].date))+'</text>';
- return'<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg><div class="lg"><span><s style="background:'+color+'"></s>daily</span><span><s style="background:#eaecef"></s>'+avgN+'-day avg</span></div>';
+function lineAt(f,a,b){return[[a,f[0]+f[1]*a],[b,f[0]+f[1]*b]]}
+function monthTicks(x0,x1){var r=[],d=new Date(x0);d=new Date(d.getFullYear(),d.getMonth()+(d.getDate()>1?1:0),1);while(d.getTime()<=x1){r.push([d.getTime(),MO[d.getMonth()]+' '+String(d.getFullYear()).slice(2)]);d=new Date(d.getFullYear(),d.getMonth()+2,1)}return r}
+function ms(s){return Date.parse(s.replace(' ','T'))}
+function pad(a,lo,hi,mn){var l=Math.min.apply(0,a),h=Math.max.apply(0,a);if(lo!=null)l=Math.min(l,lo);if(hi!=null)h=Math.max(h,hi);var p=Math.max((h-l)*.1,mn||.1);return[l-p,h+p]}
+
+function chartBF(d){
+ var b=d.bf,xn=d.day,f=b.fit,pts=b.pts.map(function(p){return[p[0],p[1],null,'Day '+p[0].toFixed(1)+' · '+p[1]+'%']});
+ var yr=pad(pts.map(function(p){return p[1]}).concat([10]),null,null,.4);
+ return plot({x0:0,x1:100,y0:yr[0],y1:yr[1],fy:function(v){return v.toFixed(1)+'%'},xt:[0,20,40,60,80,100].map(function(v){return[v,'D'+v]}),
+  hl:[{y:12,c:'#69717d',t:'12%',d:'2 3'}],vl:[{x:xn,t:'today'}],
+  lines:[{pts:b.target,c:'#c8a45c',w:1.8,d:'6 4'},{pts:f?lineAt(f,0,xn):[],c:'#4ea87a',w:3.2},{pts:f?lineAt(f,xn,100):[],c:'#4ea87a',w:2,d:'3 4',o:.7}],
+  dots:[{pts:pts,c:'#4ea87a',r:2.6,o:.4}],
+  lg:[['#4ea87a','Trend (linear fit since Day 0)'],['#c8a45c','Target line to 10% by Day 100'],['#4ea87a','Daily readings',1]]});
+}
+function chartLean(d){
+ var b=d.lean,xn=d.day,f=b.fit,pts=b.pts.map(function(p){return[p[0],p[1],null,'Day '+p[0].toFixed(1)+' · '+p[1]+' kg']});
+ var yr=pad(pts.map(function(p){return p[1]}),b.floor,b.base,.15),x1=Math.max(xn+7,21);
+ var xt=[];for(var v=0;v<=x1;v+=7)xt.push([v,'D'+v]);
+ return plot({x0:0,x1:x1,y0:yr[0],y1:yr[1],fy:function(v){return v.toFixed(1)},xt:xt,
+  hl:[{y:b.floor,c:'#c05a51',t:b.floor+' floor'},{y:b.base,c:'#c8a45c',t:b.base+' Day 0',d:'2 3'}],vl:[{x:xn,t:'today'}],
+  lines:[{pts:f?lineAt(f,0,xn):[],c:'#4ea87a',w:3.2}],dots:[{pts:pts,c:'#4ea87a',r:2.6,o:.4}],
+  lg:[['#4ea87a','Trend'],['#4ea87a','Lean readings (kg)',1]]});
+}
+function pacePlot(pts,extraLo,d,cap){
+ var all=pts.map(function(p){return p[1]}),first=Math.min.apply(0,pts.map(function(p){return p[0]}));
+ var x0=Math.max(Date.parse('2025-05-01T00:00:00'),first-3*864e5),x1=Date.parse(d.asof+'T00:00:00')+4*864e5;
+ var lo=Math.min(Math.min.apply(0,all),extraLo)-.2,hi=Math.min(Math.max.apply(0,all)+.3,cap);
+ return{x0:x0,x1:x1,y0:Math.max(lo,3),y1:hi,xt:monthTicks(x0,x1)};
+}
+function chartRun(d){
+ var r=d.run,cut=Date.parse('2026-09-12T00:00:00'),pts=r.pts.map(function(p){var t=ms(p[0]);return[t,p[1],t>=cut?'#c8a45c':null,p[0].slice(0,16)+' · '+pf(p[1])+'/km · '+p[2]+' km']});
+ if(!pts.length)return'<div class="meta">no runs ≥ 3 km</div>';
+ var ax=pacePlot(pts,r.target,d,12);
+ return plot({x0:ax.x0,x1:ax.x1,y0:ax.y0,y1:ax.y1,inv:1,fy:pf,xt:ax.xt,hl:[{y:r.target,c:'#c8a45c',t:pf(r.target)+' target'}],
+  lines:[{pts:r.roll.map(function(p){return[ms(p[0]),p[1]]}),c:'#eaecef',w:2.6}],dots:[{pts:pts,c:'#98a0ac',r:3,o:.55}],
+  lg:[['#eaecef','30-day average'],['#98a0ac','Run ≥ 3 km',1],['#c8a45c','Since 12 Sep',1]]});
+}
+function chartWalk(d){
+ var w=d.walk,E='#c8a45c',Lt='#7aa7d9',pts=w.pts.map(function(p){return[ms(p[0]),p[1],p[3]?E:Lt,p[0].slice(0,16)+' · '+pf(p[1])+'/km · '+p[2]+' km']});
+ if(!pts.length)return'<div class="meta">no walks ≥ 4.5 km</div>';
+ var ax=pacePlot(pts,w.band?w.band[0]:99,d,12.5);
+ return plot({x0:ax.x0,x1:ax.x1,y0:ax.y0,y1:ax.y1,inv:1,fy:pf,xt:ax.xt,bands:w.band?[{a:w.band[0],b:w.band[1],c:'#4ea87a',t:'normal band (30 d, 25th–75th pctile)'}]:[],
+  lines:[{pts:w.roll.map(function(p){return[ms(p[0]),p[1]]}),c:'#eaecef',w:2.6}],dots:[{pts:pts,c:Lt,r:3.4,o:.9}],
+  lg:[['#eaecef','30-day average'],[E,'Started before '+w.cutoff,1],[Lt,'Started '+w.cutoff+' or later',1]]});
+}
+function chartPM(d){
+ var rows=d.pm.rows,W=640,H=230,L=46,R=14,Tp=22,Bt=28,mx=0,g='';
+ rows.forEach(function(r){mx=Math.max(mx,r.last||0,r.this||0)});mx=Math.ceil(mx*1.15);
+ var Y=function(v){return Tp+(1-v/mx)*(H-Tp-Bt)},gw=(W-L-R)/rows.length,bw=Math.min(46,gw/3);
+ for(var i=0;i<=4;i++){var v=mx*i/4;g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v).toFixed(1)+'" y2="'+Y(v).toFixed(1)+'" stroke="#262b34"/><text x="'+(L-6)+'" y="'+(Y(v)+3).toFixed(1)+'" text-anchor="end">'+v.toFixed(0)+'</text>'}
+ rows.forEach(function(r,k){var cx=L+gw*k+gw/2;
+  [[r.last,'#69717d',-bw-2,'last wk'],[r.this,'#c8a45c',2,'this wk']].forEach(function(b){if(b[0]==null)return;g+='<rect x="'+(cx+b[2]).toFixed(1)+'" y="'+Y(b[0]).toFixed(1)+'" width="'+bw+'" height="'+(H-Bt-Y(b[0])).toFixed(1)+'" fill="'+b[1]+'" rx="2"><title>'+r.wd+' '+b[3]+' · '+b[0]+' kcal/min</title></rect><text x="'+(cx+b[2]+bw/2).toFixed(1)+'" y="'+(Y(b[0])-4).toFixed(1)+'" text-anchor="middle" style="fill:var(--ink)">'+b[0].toFixed(1)+'</text>'});
+  g+='<text x="'+cx.toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle" style="fill:var(--i2)">'+r.wd+'</text>';
+  if(r.pct!=null)g+='<text x="'+cx.toFixed(1)+'" y="12" text-anchor="middle" style="fill:'+(r.pct>=0?'var(--g)':'var(--r)')+'">'+(r.pct>=0?'▲ ':'▼ ')+Math.abs(r.pct)+'%</text>';
+  else if(!r.this)g+='<text x="'+(cx+bw/2+2).toFixed(1)+'" y="'+(H-Bt-6)+'" text-anchor="middle">not yet</text>'});
+ return'<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg><div class="lg"><span><s style="background:#69717d"></s>Last week</span><span><s style="background:#c8a45c"></s>This week</span><span>kcal per minute, strength workouts</span></div>';
 }
 
 /* ---------- cards ---------- */
-function ud(list){ // split improved / not
+function ud(list){
  var u=[],d=[];(list||[]).forEach(function(x){if(x[0]=='up')u.push(x[1]);else if(x[0]=='down')d.push(x[1])});
  var f=function(a,e){return a.length?a.map(function(t){return'<li>'+esc(t)+'</li>'}).join(''):'<li class="n">'+e+'</li>'};
  return'<div class="cols"><div class="up"><h3>Improved ('+u.length+')</h3><ol>'+f(u,'nothing yet')+'</ol></div><div class="dn"><h3>Not improved ('+d.length+')</h3><ol>'+f(d,'nothing slipped')+'</ol></div></div>';
 }
+function runway(plan){
+ var n=istDay();
+ if(!plan||plan.last_day==null)return{k:'plan',v:'a',head:'Plan runway',text:'Could not read plan.json from the site.',act:'Redeploy the tracker with deploy.sh.'};
+ var gap=plan.last_day-n,left=Math.max(gap,0),v=gap<=2?'r':gap<=5?'a':'g';
+ return{k:'plan',v:v,head:'Plan runway',text:'Tracker plan ends '+dayLab(plan.last_day)+'; today is '+dayLab(n)+': '+left+' day'+(left==1?'':'s')+' left.',act:v=='g'?'Nothing to do yet.':'Ask Opus for the next plan block now, then deploy it.'};
+}
+function actionsCard(A){
+ var c={g:0,a:0,r:0};A.forEach(function(a){c[a.v]++});
+ return'<div class="card"><h2>Actions<span class="cnt">'+c.g+' green · '+c.a+' amber · '+c.r+' red</span></h2>'+A.map(function(a,i){
+  return'<div class="act"><div class="no">'+(i+1)+'.</div><div><span class="v '+a.v+'">'+VC[a.v]+'</span></div><div><div class="hd">'+esc(a.head)+'</div><div class="tx">'+esc(a.text)+'</div><div class="ac">→ '+esc(a.act)+'</div></div></div>'}).join('')+'</div>';
+}
+function bfTable(t){
+ var cl=function(r){return r.delta==null?'r':r.delta>=-2?'g':r.delta>=-10?'a':'r'};
+ return'<div class="card"><h2>Body fat by date · target vs your trend</h2><div class="tw"><table><tr><th>Target day</th><th>Target BF</th><th>Target lean</th><th>Projected day (trend)</th><th>Ahead / behind</th></tr>'+t.map(function(r){
+  return'<tr><td>'+dayLab(r.day)+'</td><td>'+r.bf+'%</td><td>'+r.lean.toFixed(2)+' kg</td><td>'+(r.proj_day==null?'—':dayLab(r.proj_day))+'</td><td class="'+cl(r)+'">'+esc(r.status)+'</td></tr>'}).join('')+'</table></div></div>';
+}
+function chartCard(title,ins,svg,cls){return'<div class="card '+(cls||'')+'"><h2>'+title+'</h2><div class="ins">'+esc(ins)+'</div>'+svg+'</div>'}
+function loadsCard(L){
+ if(!L||!L.exercises)return'';
+ return'<div class="card"><h2>Load progression<span class="cnt">updated '+esc(L.updated||'')+'</span></h2><div class="tw"><table><tr><th>Exercise</th><th>Current</th><th>Since</th><th>Previous</th><th>Next upgrade gate</th></tr>'+L.exercises.map(function(e){
+  return'<tr><td title="'+esc(e.session||'')+'">'+esc(e.name)+'</td><td class="now">'+esc(e.current)+'</td><td>'+dayLab(e.since_day)+'</td><td>'+esc(e.previous||'—')+'</td><td>'+esc(e.gate||'—')+'</td></tr>'}).join('')+'</table></div></div>';
+}
 function wcard(name,w){
  if(!w||!w.latest)return'<div class="card"><h2>'+name+'</h2><div class="meta">no data</div></div>';
- var l=w.latest,bo=w.benchmark=='best-of';
- var row=function(lab,m,f,lowBetter,hasBest){
-  var n=m.now,l10=m.last10,b=hasBest?m.best:null,bs=hasBest?m.best_since:null;
-  return'<tr><td>'+lab+'</td><td class="now">'+f(n)+'</td><td>'+f(l10)+'</td><td>'+f(m.median)+'</td>'+(hasBest?'<td>'+f(b)+'</td><td>'+f(bs)+'</td>':'<td>—</td><td>—</td>')+'<td>'+(m.pctile!=null?m.pctile+'%':'—')+'</td></tr>'};
- var p=w.pace,vs=p.now<p.last10;
- return'<div class="card"><h2>Latest '+name+' vs history</h2>'
- +'<div class="sub">'+l.start.slice(0,16)+' · '+fx(l.km,2)+' km · '+fx(l.min,0)+' min · '+fx(l.kcal,0)+' kcal · history n='+w.n_hist+' (since Oct 2023) · benchmark: '+(bo?'best-of':'median')+'</div>'
- +'<table><tr><th></th><th>Now</th><th>Last 10</th><th>Median</th><th>Best</th><th>Best since 11 Sep</th><th>Pctile</th></tr>'
- +row('Pace /km',w.pace,pf,true,true)+row('kcal/min',w.kcal_min,function(x){return fx(x,1)},false,true)+row('Avg HR',w.avg_hr,function(x){return fx(x,0)},false,false)+'</table>'
- +'<div style="margin-top:8px"><span class="chip '+(vs?'g':'r')+'">Pace '+(vs?'faster':'slower')+' than last-10 avg by '+pf(Math.abs(p.last10-p.now))+'/km</span> <span class="chip '+(p.now<=p.best?'g':'n')+'">'+(p.now<=p.best?'NEW ALL-TIME BEST':'best '+pf(p.best)+', gap '+pf(p.now-p.best))+'</span></div></div>';
+ var l=w.latest,p=w.pace,vs=p.now<p.last10;
+ var row=function(lab,m,f,hasBest){return'<tr><td>'+lab+'</td><td class="now">'+f(m.now)+'</td><td>'+f(m.last10)+'</td><td>'+f(m.median)+'</td>'+(hasBest?'<td>'+f(m.best)+'</td><td>'+f(m.best_since)+'</td>':'<td>—</td><td>—</td>')+'</tr>'};
+ return'<div class="card"><h2>Latest '+name+' vs history</h2><div class="sub">'+l.start.slice(0,16)+' · '+fx(l.km,2)+' km · '+fx(l.min,0)+' min · '+fx(l.kcal,0)+' kcal · n='+w.n_hist+' since 1 May 2025</div>'
+ +'<div class="tw"><table><tr><th></th><th>Now</th><th>Last 10</th><th>Median</th><th>Best</th><th>Best since 11 Sep</th></tr>'
+ +row('Pace /km',w.pace,pf,1)+row('kcal/min',w.kcal_min,function(x){return fx(x,1)},1)+row('Avg HR',w.avg_hr,function(x){return fx(x,0)},0)+'</table></div>'
+ +'<div style="margin-top:8px"><span class="chip '+(vs?'g':'r')+'">Pace '+(vs?'faster':'slower')+' than last-10 avg by '+pf(Math.abs(p.last10-p.now))+'/km</span> <span class="chip '+(p.now<=p.best?'g':'n')+'">'+(p.now<=p.best?'NEW BEST':'best '+pf(p.best)+', gap '+pf(p.now-p.best))+'</span></div></div>';
 }
-function delta(a,b,d,unit){var x=(a-b)/b*100;return'<i style="color:'+(x>=0?'var(--g)':'var(--r)')+'">'+(x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(0)+'% vs prev</i>'}
 function actCard(a){
- var k=function(l,key,d,sc){var c=a.last7[key],p=a.prev7[key];return'<div><small>'+l+'</small><b>'+(sc?(c/1000).toFixed(1)+'k':fx(c,d))+'</b>'+delta(c,p)+'</div>'};
- var ld=a.last_day,pd=a.prev_day;
- return'<div class="card"><h2>Activity · last 7 days vs previous 7</h2><div class="kv">'+k('Steps','steps',0,1)+k('Distance km','km',1)+k('Active kcal','active_kcal',0)+k('Exercise min','exercise_min',0)+'</div>'
- +'<div class="sub" style="margin-top:10px">'+ld.date+' <b>so far</b> (export time): '+fx(ld.steps,0)+' steps · '+fx(ld.dist_km,1)+' km · '+fx(ld.active_kcal,0)+' kcal · '+fx(ld.exercise_min,0)+' min &nbsp;|&nbsp; '+pd.date+': '+fx(pd.steps,0)+' steps · '+fx(pd.dist_km,1)+' km · '+fx(pd.active_kcal,0)+' kcal · '+fx(pd.exercise_min,0)+' min</div></div>';
+ var k=function(l,key,d,sc){var c=a.last7[key],p=a.prev7[key],x=p?(c-p)/p*100:null;return'<div><small>'+l+'</small><b>'+(sc?(c/1000).toFixed(1)+'k':fx(c,d))+'</b><i>'+(x==null?'':'prev 7: '+(x>=0?'+':'−')+Math.abs(x).toFixed(0)+'%')+'</i></div>'};
+ return'<div class="card"><h2>Activity · last 7 days (context only)</h2><div class="kv">'+k('Steps','steps',0,1)+k('Distance km','km',1)+k('Active kcal','active_kcal',0)+k('Exercise min','exercise_min',0)+'</div></div>';
 }
 
-function render(S,B,D,Wk){
- $('gen').textContent='Synced '+S.generated.replace('T',' ').slice(0,16);
+var LAST=null;
+function render(S,Ld,plan){
+ var D=S.dash;
+ if(!D){$('app').innerHTML='<div class="card"><h2>Old data</h2><div class="meta">summary.json has no dashboard block. Double-click 77-Sync.command.</div></div>';return}
+ var A=D.actions.concat([runway(plan)]);LAST=[S,A,Ld];
+ $('gen').textContent=D.day_label+' · synced '+S.generated.replace('T',' ').slice(0,16);
  var tabs=[['dod','Day-on-day'],['wow','Week-on-week'],['vs_base','Since 15 Sep']],cur='dod';
- var h='<div class="card"><h2>Body · improved / not improved</h2><div class="tabs" id="tabs"></div><div id="ud"></div></div>';
- h+=actCard(S.activity);
- h+='<div class="grid">'+wcard('run',S.workouts.run)+wcard('walk',S.workouts.walk)+'</div><div style="height:12px"></div>';
- h+='<div class="grid"><div class="card"><h2>Weight (kg)</h2><div id="c1"></div></div><div class="card"><h2>Body fat %</h2><div id="c2"></div></div>'
-  +'<div class="card"><h2>Lean &amp; muscle mass (kg)</h2><div id="c3"></div></div><div class="card"><h2>Fat mass &amp; visceral</h2><div id="c4"></div></div>'
-  +'<div class="card"><h2>Steps · last 90 days</h2><div id="c5"></div></div><div class="card"><h2>Active kcal · last 90 days</h2><div id="c6"></div></div>'
-  +'<div class="card"><h2>Run pace /km · faster = higher</h2><div id="c7"></div></div><div class="card"><h2>Walk pace /km · faster = higher</h2><div id="c8"></div></div></div>';
+ var h=actionsCard(A);
+ h+='<div class="card"><h2>Body · improved / not improved</h2><div class="tabs" id="tabs"></div><div id="ud"></div></div>';
+ h+=bfTable(D.bf_table);
+ h+='<div class="grid">'
+  +chartCard('Body fat %',D.bf.insight,chartBF(D))
+  +chartCard('Lean mass (kg)',D.lean.insight,chartLean(D))
+  +chartCard('Run pace /km · runs ≥ 3 km · faster = higher',D.run.insight,chartRun(D))
+  +chartCard('Walk pace /km · training walks ≥ 4.5 km · faster = higher',D.walk.insight,chartWalk(D))
+  +chartCard('PM session kcal/min · this week vs last',D.pm.insight,chartPM(D),'span2')+'</div><div style="height:12px"></div>';
+ h+=loadsCard(Ld);
+ h+='<div class="grid">'+wcard('run',S.workouts.run)+wcard('walk',S.workouts.walk)+'</div><div style="height:12px"></div>'+actCard(S.activity);
  $('app').innerHTML=h;
  var show=function(){$('ud').innerHTML=ud(S.body[cur]);$('tabs').innerHTML=tabs.map(function(t){return'<button data-k="'+t[0]+'" class="'+(t[0]==cur?'on':'')+'">'+t[1]+'</button>'}).join('');
   Array.prototype.forEach.call($('tabs').children,function(b){b.onclick=function(){cur=b.dataset.k;show()}})};show();
- var bp=function(k){return B.map(function(r){return[dt(r.date)+ (Date.parse(r.ts.replace(' ','T'))-dt(r.date)),num(r[k])]}).filter(function(p){return p[1]!=null})};
- var f1=function(v){return v.toFixed(1)};
- $('c1').innerHTML=lineChart({fy:f1,series:[{pts:bp('weight'),color:'#c8a45c',dots:1}]});
- $('c2').innerHTML=lineChart({fy:f1,series:[{pts:bp('fat_pct'),color:'#4ea87a',dots:1}]});
- $('c3').innerHTML=lineChart({fy:f1,series:[{pts:bp('lean_kg'),color:'#4ea87a',dots:1,label:'Lean'},{pts:bp('muscle_kg'),color:'#7aa7d9',dots:1,label:'Muscle'}]});
- $('c4').innerHTML=lineChart({fy:f1,series:[{pts:bp('fat_kg'),color:'#c05a51',dots:1,label:'Fat kg'},{pts:bp('visceral'),color:'#c9973f',dots:1,label:'Visceral'}]});
- var dl=D.slice(-90);$('c5').innerHTML=barChart(dl,'steps',7,'#7aa7d9');$('c6').innerHTML=barChart(dl,'active_kcal',7,'#c9973f');
- var cut=dt('2026-09-11'),wp=function(type){var P=Wk.filter(function(w){return w.type==type&&num(w.pace)}).map(function(w){var t=Date.parse(w.start.replace(' ','T'));return[t,num(w.pace),t>=cut?'#4ea87a':'#69717d']});
-  var rec=P.filter(function(p){return p[0]>=cut});return[{pts:P,color:'#69717d',dots:1,line:false,r:2.2,label:'History'},{pts:rec,color:'#4ea87a',dots:1,line:false,r:3.2,label:'Since 11 Sep'}]};
- $('c7').innerHTML=lineChart({fy:pf,inv:1,clip:1,series:wp('run')});$('c8').innerHTML=lineChart({fy:pf,inv:1,clip:1,series:wp("walk")});
 }
 
 /* ---------- Copy for Claude (built in browser, zero Claude usage) ---------- */
-var LAST=null;
 function ln(a){return a.length?a.map(function(t,i){return'   '+'abcdefghij'[i]+'. '+t[1]}).join('\n'):'   a. none'}
-function buildText(S,B,D,Wk){
- var b=S.body,l=b.last,pr=b.prev,wk=b.week_ref,bs=b.base,a=S.activity,L=[];
- var day=Math.round((dt(l.date)-dt('2026-09-12'))/864e5)+1;
+function buildText(S,A,Ld){
+ var b=S.body,l=b.last,pr=b.prev,wk=b.week_ref,bs=b.base,a=S.activity,L=[],D=S.dash;
  var bl=function(r){return r.weight+' kg · fat '+r.fat_pct+'% ('+r.fat_kg+' kg) · lean '+r.lean_kg+' · muscle '+r.muscle_kg+' · water '+r.water_kg+' · visceral '+r.visceral};
- L.push('77 STATUS · '+l.date+' · Day '+day+' of 100 (synced '+S.generated.replace('T',' ').slice(0,16)+')','');
+ L.push('77 STATUS · '+D.day_label+' of 100 (synced '+S.generated.replace('T',' ').slice(0,16)+')','');
+ L.push('ACTIONS');
+ A.forEach(function(x,i){L.push((i+1)+'. ['+VC[x.v]+'] '+x.head+': '+x.text,'   → '+x.act)});
+ L.push('');
  L.push('1. BODY NOW (Cult scale '+l.ts.slice(11,16)+')','   a. '+bl(l),'   b. prev '+pr.date+': '+bl(pr),'   c. week ago '+wk.date+': '+wk.weight+' kg · fat '+wk.fat_pct+'%','   d. since 15 Sep: '+bs.weight+' kg · fat '+bs.fat_pct+'%','');
  var u=function(x){return(x||[]).filter(function(y){return y[0]=='up'})},d=function(x){return(x||[]).filter(function(y){return y[0]=='down'})};
  L.push('2. IMPROVED / NOT (day-on-day)','   IMPROVED:',ln(u(b.dod)),'   NOT IMPROVED:',ln(d(b.dod)),'');
  L.push('3. IMPROVED / NOT (week-on-week)','   IMPROVED:',ln(u(b.wow)),'   NOT IMPROVED:',ln(d(b.wow)),'');
  L.push('4. SINCE 15 SEP','   IMPROVED:',ln(u(b.vs_base)),'   NOT IMPROVED:',ln(d(b.vs_base)),'');
+ L.push('5. BODY FAT BY DATE (target → trend)');
+ D.bf_table.forEach(function(r,i){L.push('   '+'abcdefghij'[i]+'. '+dayLab(r.day)+' · '+r.bf+'% · lean '+r.lean.toFixed(2)+' → '+(r.proj_day==null?'not reached':dayLab(r.proj_day))+' · '+r.status)});L.push('');
+ L.push('6. CHART INSIGHTS','   a. Body fat: '+D.bf.insight,'   b. Lean: '+D.lean.insight,'   c. Run pace: '+D.run.insight,'   d. Walk pace: '+D.walk.insight,'   e. PM kcal/min: '+D.pm.insight,'');
+ if(Ld&&Ld.exercises){L.push('7. LOADS');Ld.exercises.forEach(function(e,i){L.push('   '+'abcdefghijkl'[i]+'. '+e.name+': '+e.current+' since '+dayLab(e.since_day)+' (prev '+(e.previous||'—')+') · gate: '+(e.gate||'—'))});L.push('')}
  var pc=function(c,p){return(p?((c-p)/p*100>=0?'+':'')+((c-p)/p*100).toFixed(0)+'%':'—')};
- L.push('5. ACTIVITY last 7 vs prev 7','   a. steps '+a.last7.steps+' ('+pc(a.last7.steps,a.prev7.steps)+') · km '+fx(a.last7.km,1)+' ('+pc(a.last7.km,a.prev7.km)+')','   b. active kcal '+Math.round(a.last7.active_kcal)+' ('+pc(a.last7.active_kcal,a.prev7.active_kcal)+') · exercise min '+Math.round(a.last7.exercise_min)+' ('+pc(a.last7.exercise_min,a.prev7.exercise_min)+')','   c. '+a.last_day.date+' so far: '+a.last_day.steps+' steps · '+a.last_day.exercise_min+' min','');
- var n=6;['run','walk'].forEach(function(k){var w=S.workouts[k];if(!w||!w.latest)return;var x=w.latest,p=w.pace,h=w.avg_hr;
-  L.push(n+'. LATEST '+k.toUpperCase()+' '+x.start.slice(0,16)+' · '+fx(x.km,2)+' km · '+fx(x.min,0)+' min','   a. pace '+pf(p.now)+'/km vs last10 '+pf(p.last10)+' · median '+pf(p.median)+' · best '+pf(p.best)+' · since 11 Sep best '+pf(p.best_since)+' · pctile '+p.pctile+'%','   b. kcal/min '+fx(w.kcal_min.now,1)+' (median '+fx(w.kcal_min.median,1)+') · avg HR '+fx(h.now,0)+' (median '+fx(h.median,0)+')','');n++});
+ L.push('8. ACTIVITY last 7 vs prev 7','   a. steps '+a.last7.steps+' ('+pc(a.last7.steps,a.prev7.steps)+') · km '+fx(a.last7.km,1)+' ('+pc(a.last7.km,a.prev7.km)+')','   b. active kcal '+Math.round(a.last7.active_kcal)+' ('+pc(a.last7.active_kcal,a.prev7.active_kcal)+') · exercise min '+Math.round(a.last7.exercise_min)+' ('+pc(a.last7.exercise_min,a.prev7.exercise_min)+')','');
+ var n=9;['run','walk'].forEach(function(k){var w=S.workouts[k];if(!w||!w.latest)return;var x=w.latest,p=w.pace,h=w.avg_hr;
+  L.push(n+'. LATEST '+k.toUpperCase()+' '+x.start.slice(0,16)+' · '+fx(x.km,2)+' km · '+fx(x.min,0)+' min','   a. pace '+pf(p.now)+'/km vs last10 '+pf(p.last10)+' · median '+pf(p.median)+' · best '+pf(p.best)+' · since 11 Sep best '+pf(p.best_since),'   b. kcal/min '+fx(w.kcal_min.now,1)+' (median '+fx(w.kcal_min.median,1)+') · avg HR '+fx(h.now,0)+' (median '+fx(h.median,0)+')','');n++});
  L.push(n+'. OPEN ITEMS','   a. see current_state.md; add today\'s question below','');
  return L.join('\n');
 }
 function copyTxt(){
- if(!LAST)return;var t=buildText(LAST[0],LAST[1],LAST[2],LAST[3]),ok=function(){$('cp').textContent='Copied ✓';setTimeout(function(){$('cp').textContent='Copy for Claude'},1800);$('cpbox').style.display='none'},
+ if(!LAST)return;var t=buildText(LAST[0],LAST[1],LAST[2]),ok=function(){$('cp').textContent='Copied ✓';setTimeout(function(){$('cp').textContent='Copy for Claude'},1800);$('cpbox').style.display='none'},
  fb=function(){$('cpbox').style.display='block';var ta=$('cpta');ta.value=t;ta.focus();ta.select()};
  try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}
 }
@@ -179,8 +260,8 @@ function load(){
  $('err').textContent='';$('gen').textContent='loading…';
  if(!T){$('tok').style.display='block';$('gen').textContent='not connected';return}
  $('tok').style.display='none';
- Promise.all([gh('summary.json'),gh('body.csv'),gh('daily.csv'),gh('workouts.csv')]).then(function(r){
-  LAST=[JSON.parse(r[0]),csv(r[1]),csv(r[2]),csv(r[3])];render(LAST[0],LAST[1],LAST[2],LAST[3]);
+ Promise.all([gh('summary.json'),gh('loads.json').catch(function(){return null}),fetch('plan.json?'+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})]).then(function(r){
+  render(JSON.parse(r[0]),r[1]?JSON.parse(r[1]):null,r[2]);
  }).catch(function(e){$('err').textContent='Could not load: '+e.message+(/40[13]/.test(e.message)?' — token missing/expired. Re-paste it below.':'');if(/40[13]/.test(e.message)){$('tok').style.display='block'}$('gen').textContent='error'});
 }
 $('rf').onclick=load;
