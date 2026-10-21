@@ -10,7 +10,7 @@
   browser's localStorage (`77gh`). Entered once per device. Never in the page source.
 
 ## Source of truth
-`~/Documents/77-performance-os/77-days1-14.html` — the plan. Edit ONLY that.
+`~/Claude Work/77-performance-os/77-days1-14.html` — the plan. Edit ONLY that.
 `index.html` here is GENERATED. Never hand-edit it.
 
 ## Redeploy
