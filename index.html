@@ -2088,7 +2088,7 @@ details.past>summary{list-style:none}details.past>summary::-webkit-details-marke
 </div></details><div class="xp"><button id="xpb">⬇︎  COPY MY WEEK</button><div class="h">One tap. Copies your ticks and open-item states to the clipboard. Paste it into chat on Sunday together with your Apple Health export — that is the whole weekly log.</div></div>
 <div class="rst"><button onclick="resetAll()">Reset all ticks</button></div>
 <footer>77 Performance OS · Day 1 = Sat 12 Sep 2026 · Day 100 = Sun 20 Dec 2026<br>
-Ticks sync across your devices. Build <span id="bld">22 Oct 2026 11:45 IST</span>.<br>
+Ticks sync across your devices. Build <span id="bld">22 Oct 2026 11:46 IST</span>.<br>
 General fitness programming, not medical advice.</footer></div>
 <script>
 (function(){var Q=[["Only the disciplined ones in life are free.","Eliud Kipchoge"],["We are what we repeatedly do. Excellence, then, is not an act, but a habit.","Will Durant"],["The miracle isn't that I finished. The miracle is that I had the courage to start.","John Bingham"],["Hard work beats talent when talent doesn't work hard.","Tim Notke"],["Don't quit. Suffer now and live the rest of your life as a champion.","Muhammad Ali"],["Discipline equals freedom.","Jocko Willink"],["It never gets easier, you just go faster.","Greg LeMond"],["Motivation is what gets you started. Habit is what keeps you going.","Jim Ryun"],["To give anything less than your best is to sacrifice the gift.","Steve Prefontaine"],["You can't put a limit on anything. The more you dream, the farther you get.","Michael Phelps"]];
@@ -2342,106 +2342,7 @@ if(!TOKEN){
 }
 window.addEventListener('focus',function(){if(TOKEN&&!dirty&&!inflight)pull();});
 </script>
-<script>/* ---- REST TIMER v2 (22 Sep): ONE countdown at a time (new tap cancels old, incl. its beeps) + SCREEN STAYS ON ---- */
-(function(){
-var css=document.createElement('style');css.textContent=
-'.rt{display:block;width:fit-content;margin:8px 0 4px;font:700 11px/1 var(--m,monospace);letter-spacing:.04em;padding:8px 9px;border-radius:8px;border:1px solid var(--acc,#c8a45c);color:var(--acc,#c8a45c);background:none;cursor:pointer;white-space:nowrap}'+
-'.rt.on{background:var(--acc,#c8a45c);color:#0b0d10}'+
-'#rtbar{position:fixed;left:0;right:0;bottom:0;z-index:99;display:none;background:#14171c;border-top:2px solid var(--acc,#c8a45c);padding:12px 16px calc(12px + env(safe-area-inset-bottom));font-family:var(--m,monospace);color:#eaecef}'+
-'#rtbar .row{display:flex;align-items:center;gap:10px;max-width:720px;margin:0 auto}'+
-'#rtbar .t{font:800 34px/1 var(--m,monospace);min-width:88px}'+
-'#rtbar .l{flex:1;font-size:12px;line-height:1.35;color:#98a0ac}#rtbar .l b{color:#eaecef}'+
-'#rtbar button{font:700 12px var(--m,monospace);padding:11px 10px;border-radius:8px;border:1px solid #262b34;background:none;color:#eaecef}'+
-'#rtbar.go{border-top-color:#4ea87a;background:#12301f}#rtbar.go .t{color:#4ea87a}'+
-'#wakeb{position:fixed;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:98;font:700 10.5px var(--m,monospace);padding:7px 9px;border-radius:99px;border:1px solid #262b34;background:#14171c;color:#98a0ac}'+
-'#wakeb.on{color:#4ea87a;border-color:rgba(78,168,122,.5)}';
-document.head.appendChild(css);
-/* ---------- screen stays on v3 (23 Sep): re-acquire aggressively + honest status ---------- */
-var WK=true;try{WK=localStorage.getItem('77wake')!=='0'}catch(e){}
-var wl=null,vid=null,why='',wb=document.createElement('button');wb.id='wakeb';document.body.appendChild(wb);
-function vok(){return !!(vid&&!vid.paused&&!vid.ended&&vid.readyState>2);}
-function wpaint(){var on=WK&&(wl||vok());wb.className=on?'on':'';
- wb.textContent=!WK?'\u{1F319} SCREEN CAN SLEEP':(wl?'☀ ON · lock':(vok()?'☀ ON · video':'⚠ WILL SLEEP'+(why?' · '+why:'')));}
-function wakeOn(){ if(!WK)return;
- try{ if('wakeLock' in navigator && !wl) navigator.wakeLock.request('screen').then(function(w){
-    wl=w;why='';w.addEventListener('release',function(){wl=null;wpaint();});wpaint();
-   }).catch(function(err){ why=(err&&err.name==='NotAllowedError')?'low power mode?':'no lock'; wpaint(); });
-   else if(!('wakeLock' in navigator)) why='browser has no lock';
- }catch(e){}
- try{ if(!vid){vid=document.createElement('video');vid.setAttribute('playsinline','');vid.setAttribute('webkit-playsinline','');
-   vid.setAttribute('muted','');vid.muted=true;vid.loop=true;vid.autoplay=true;vid.setAttribute('autoplay','');
-   /* real layout size: iOS ignores a 1px video when deciding to hold the screen awake */
-   vid.style.cssText='position:fixed;right:2px;bottom:2px;width:64px;height:36px;opacity:0.008;z-index:0;pointer-events:none';
-   vid.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMrbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAB9AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAlV0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAfQAAAAAAABAAAAAAHNbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAgABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABeG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAThzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAK/+EAFmdCwArZHsBEAAADAAQAAAMACDxImSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAApAAAAKQAAAABhzdHRzAAAAAAAAAAEAAAACAABAAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAACAAAAAQAAABxzdHN6AAAAAAAAAAAAAAACAAAChgAAAAoAAAAUc3RjbwAAAAAAAAABAAADWwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNTguNzYuMTAwAAAACGZyZWUAAAKYbWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjMgcjMwNjAgNWRiNmFhNiAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjEgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBb///w9FAAFPf4AAAAAGQZo4CvqA';document.body.appendChild(vid);}
-   var p=vid.play();if(p&&p.then)p.then(wpaint).catch(function(){});}catch(e){}
- wpaint(); }
-function wakeOff(){ try{if(wl){wl.release();wl=null}}catch(e){} try{if(vid)vid.pause()}catch(e){} why='';wpaint(); }
-wb.addEventListener('click',function(e){e.stopPropagation();WK=!WK;try{localStorage.setItem('77wake',WK?'1':'0')}catch(x){} if(WK)wakeOn();else wakeOff();});
-/* re-arm on ANY interaction (locks may only be taken inside a user gesture), on return to the app, and on a heartbeat */
-document.addEventListener('pointerdown',function(){ if(WK&&!(wl&&vok()))wakeOn(); },true);
-document.addEventListener('change',function(){ if(WK)wakeOn(); },true);
-document.addEventListener('visibilitychange',function(){ if(!document.hidden&&WK)wakeOn(); });
-window.addEventListener('focus',function(){ if(WK)wakeOn(); });
-setInterval(function(){ if(WK&&!(wl&&vok()))wakeOn(); else wpaint(); },10000);
-wakeOn();
-/* ---------- the timer ---------- */
-var bar=document.createElement('div');bar.id='rtbar';
-bar.innerHTML='<div class="row"><div class="t" id="rtt">0:00</div><div class="l" id="rtl"></div><button id="rts"></button><button id="rtp">+15s</button><button id="rtx">✕</button></div>';
-document.body.appendChild(bar);
-var T=document.getElementById('rtt'),L=document.getElementById('rtl'),end=0,tick=null,cur=null,ac=null,sched=[],cnt={};
-var SND=true;try{SND=localStorage.getItem('77snd')!=='0'}catch(e){}
-var SB=document.getElementById('rts');function sndPaint(){SB.textContent=SND?'🔊':'🔇';SB.style.opacity=SND?'1':'.6';}sndPaint();
-SB.addEventListener('click',function(){SND=!SND;try{localStorage.setItem('77snd',SND?'1':'0')}catch(e){} if(!SND)cancelBeeps();else if(tick)scheduleBeeps();sndPaint();});
-function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+('0'+s%60).slice(-2);}
-function ensureAC(){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){ac=null}}
-function cancelBeeps(){sched.forEach(function(o){try{o.stop(0);o.disconnect();}catch(e){}});sched=[];}
-function beep(at,f){var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);
- g.gain.setValueAtTime(0.0001,at);g.gain.exponentialRampToValueAtTime(0.4,at+0.02);g.gain.exponentialRampToValueAtTime(0.0001,at+0.25);o.start(at);o.stop(at+0.3);sched.push(o);}
-function scheduleBeeps(){cancelBeeps();if(!SND||!ac)return;var left=(end-Date.now())/1000;if(left<=0)return;var t0=ac.currentTime+left;
- if(left>2)beep(t0-2,660);if(left>1)beep(t0-1,660);beep(t0,990);beep(t0+0.35,990);}
-function stop(){clearInterval(tick);tick=null;cancelBeeps();bar.style.display='none';bar.className='';if(cur)cur.btn.classList.remove('on');cur=null;}
-function paint(){var left=(end-Date.now())/1000;
- if(left<=0){clearInterval(tick);tick=null;bar.className='go';T.textContent='GO';
-  L.innerHTML=cur.last?'<b>Next exercise</b>':'<b>Set '+(cur.k+1)+' of '+cur.n+'</b> · '+cur.name;
-  if(cur.last){cnt[cur.id]=0;cur.btn.textContent='⏱ done';}
-  var mine=cur;setTimeout(function(){if(cur===mine&&!tick)stop();},20000);return;}
- T.textContent=fmt(left);}
-function start(ex,btn,rest,n,name){
- ensureAC();
- /* ONE countdown only: whatever was running — any exercise — is cancelled, beeps included */
- clearInterval(tick);tick=null;cancelBeeps();if(cur&&cur.btn!==btn)cur.btn.classList.remove('on');
- var id=ex.getAttribute('for');cnt[id]=(cnt[id]||0)+1;var k=cnt[id],last=k>=n;
- btn.textContent='⏱ '+Math.min(k,n)+'/'+n;btn.classList.add('on');
- cur={btn:btn,k:k,n:n,name:name,id:id,last:last};
- end=Date.now()+rest*1000;bar.style.display='block';bar.className='';
- L.innerHTML=last?'<b>All '+n+' sets done — tick it now</b> · '+lbl(rest)+' to the next exercise':'<b>Set '+k+' of '+n+' done</b> · '+name+' · rest '+lbl(rest);
- scheduleBeeps();tick=setInterval(paint,250);paint();}
-document.getElementById('rtx').addEventListener('click',stop);
-document.getElementById('rtp').addEventListener('click',function(){if(tick){end+=15000;scheduleBeeps();paint();}});
-document.addEventListener('visibilitychange',function(){if(!document.hidden&&tick){paint();scheduleBeeps();}});
-function lbl(s){return (s>=60&&s%60===0)?(s/60)+' min':s+'s';}
-function rx(tx){var r=tx.match(/rest (\d+)\s*(sec|min)/i)||tx.match(/(\d+)\s*(sec|min) rest/i);if(!r)return 0;return parseInt(r[1],10)*(/min/i.test(r[2])?60:1);}
-function mk(ex,host,rest,n,name,key,tag){
- var proxy=key?{getAttribute:function(){return key;}}:ex;
- var b=document.createElement('button');b.type='button';b.className='rt';var base='⏱ '+(tag?tag+' · ':'')+lbl(rest);b.textContent=base;
- b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();start(proxy,b,rest,n,name+(tag?' ('+tag+')':''));});
- host.parentNode.insertBefore(b,host.nextSibling);
- var cb=ex.querySelector('input[type=checkbox]');
- if(cb)cb.addEventListener('change',function(){if(cb.checked){cnt[proxy.getAttribute('for')]=0;b.textContent=base;if(cur&&cur.btn===b&&!cur.last)stop();}});
- return b;}
-[].forEach.call(document.querySelectorAll('label.ex'),function(ex){
- var p=ex.querySelector('.p');if(!p)return;var tx=p.textContent;
- var name=(ex.querySelector('.txt > b')||ex.querySelector('b')||{}).textContent||'';
- var main=null,rest=rx(tx);
- var n=tx.match(/(\d+)\s*(sets?|rounds?)/i);n=n?parseInt(n[1],10):1;
- if(rest&&n>=2)main=mk(ex,p,rest,n,name,null,'');
- /* warm-up sets described in the card body, e.g. "2 easy sets of 3 as warm-up, 2 min rest" */
- var c=ex.querySelector('.c');if(!c)return;var ct=c.textContent;
- var w=ct.match(/(\d+)\s*easy sets?[^.]*?warm-?up[^.]*/i)||ct.match(/warm-?up[^.]*?(\d+)\s*sets?[^.]*/i);
- if(w){var wr=rx(w[0]);if(wr){mk(ex,p,wr,parseInt(w[1],10),name,ex.getAttribute('for')+'_wu','warm-up');}}
-});
-})();
-</script>
+
 <script>/* ---- PER-EXERCISE NOTES (22 Sep) — stored in the synced items map as note_<id>; blank = all sets done as written ---- */
 (function(){
 var css=document.createElement('style');css.textContent='.ex input.nt{position:static;opacity:1;width:100%;height:auto;box-sizing:border-box}.nt{display:block;width:100%;margin:6px 0 2px;padding:9px 10px;border-radius:8px;border:1px solid var(--l,#262b34);background:var(--bg,#0b0d10);color:var(--ink,#eaecef);font:14px/1.3 -apple-system,system-ui,sans-serif}.nt::placeholder{color:#5b636e}.nt.has{border-color:var(--acc,#c8a45c)}.lsf{color:#e0c489}';
@@ -2464,7 +2365,7 @@ if(typeof applyAll==='function'){var _aa=applyAll;applyAll=function(){_aa();note
 notesPaint();
 })();
 </script><script>/* ---- AUTO-UPDATE (27 Sep): the Mac dock app kept an old copy. On open / return, fetch the live page bypassing cache; if its build id differs, reload once. ---- */
-(function(){var B='1792649700';function chk(){try{if(sessionStorage.getItem('77rl')===B)return;}catch(e){}
+(function(){var B='1792649778';function chk(){try{if(sessionStorage.getItem('77rl')===B)return;}catch(e){}
 fetch(location.href.split('#')[0].split('?')[0]+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var m=t.match(/var B='(\d+)'/);
 if(m&&m[1]!==B){try{sessionStorage.setItem('77rl',B);}catch(e){}location.reload();}}).catch(function(){});}
 chk();document.addEventListener('visibilitychange',function(){if(!document.hidden)chk();});})();
