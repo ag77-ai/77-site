@@ -91,7 +91,8 @@
   daysSorted.forEach(d => wrap.insertBefore(d, null));                 // append in order (moves them to the end, ordered)
   const buildTxt = ($('#bld') && $('#bld').textContent) || '';
   // keep the sync pill + token panel; drop everything else that the design replaces
-  ['header', '.tot', '.oi-ct', 'details.oi-p', '.oi-hint', '.oi-sub', '.pul', '.xp', 'footer', 'a[href*="dashboard"]'].forEach(s => $$(s).forEach(n => n.remove()));
+  // HIDE, never remove: the sync script's bars() writes #pct/#done/#all inside .tot, and a throw there is reported as 'Offline'
+  ['header', '.tot', '.oi-ct', 'details.oi-p', '.oi-hint', '.oi-sub', '.pul', '.xp', 'footer', 'a[href*="dashboard"]'].forEach(s => $$(s).forEach(n => { n.hidden = true; n.style.display = 'none'; }));
   const quote = $('.qt'); const reset = $('.rst');
 
   /* ── Theme ── */
