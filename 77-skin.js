@@ -171,7 +171,7 @@
       const txt = $('.txt', ex); if (!txt || $('.more77', ex)) return;
       txt.dataset.idx = String(i + 1).padStart(2, '0');
       [$('.key', ex), ...$$('.pts li', ex)].forEach(nd => { if (nd && /last set/i.test(nd.textContent) && /hold/i.test(nd.textContent)) nd.classList.add('last77'); });
-      const srcTxt = (($('.key', ex)?.textContent || '') + ' ' + ($('.pts', ex)?.textContent || '') + ' ' + ($('.c', ex)?.textContent || '')).replace(/\u00a0/g, ' ');
+      const srcTxt = (($('.key', ex)?.textContent || '') + ' ' + $$('.pts li', ex).map(li => li.textContent.split('\u2192')[0]).join(' ') + ' ' + ($('.c', ex)?.textContent || '')).replace(/\u00a0/g, ' ');
       const lm = srcTxt.match(/(\d+(?:\.\d+)?\s*kg(?:\s*(?:plates?(?:\s*(?:in each hand|per hand))?|per hand|in each hand|bell|ball))?)/i) || srcTxt.match(/\b(2\.7 plates|bodyweight)\b/i);
       if (lm && $('.p', ex)) { const chip = el('span', 'load77', lm[1].replace(/\s+/g, ' ')); $('.p', ex).after(chip); }
       const more = el('div', 'more77');
@@ -387,7 +387,8 @@
     function pairOf(x) { let A = null, B = null;
       if (ssHead(x)) { A = x; B = sib(x, 'nextElementSibling'); } else if (ssIn(x)) { B = x; A = sib(x, 'previousElementSibling'); }
       return A && B && ssHead(A) && ssIn(B) && isOpen(A) && isOpen(B) ? [A, B] : null; }
-    const allEx = () => { const inAm = !!(ex && ex.closest('.blk.am')); return $$('label.ex', today).filter(x => isOpen(x) && (!!x.closest('.blk.am')) === inAm); };
+    /* open cards in this block family, in order, starting AFTER the current exercise (then wrapping to earlier unfinished ones) */
+    const allEx = () => { const inAm = !!(ex && ex.closest('.blk.am')), fam = $$('label.ex', today).filter(x => (!!x.closest('.blk.am')) === inAm), last = seq.length ? seq[seq.length - 1].x : ex, k = fam.indexOf(last); return (k < 0 ? fam : fam.slice(k + 1).concat(fam.slice(0, k + 1))).filter(isOpen); };
     async function wake() { try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) { lock = null; } }
     function unwake() { try { lock && lock.release(); } catch (e) {} lock = null; }
     document.addEventListener('visibilitychange', () => { if (!document.hidden && root.classList.contains('on')) wake(); });
@@ -438,7 +439,7 @@
       if (a === 'add') { restEnd += 15000; restTotal += 15; }
       if (a === 'skip') restEnd = 0;
       if (e.target.closest('.x')) { root.classList.remove('on'); if (!restEnd) unwake(); }
-      if (e.target.closest('.done')) {
+      if (e.target.closest('.done') && seq.length) {
         vib(); const r = restAfter(si);
         if (si >= seq.length - 1) {
           new Set(seq.map(s => s.x)).forEach(x => { const cb = $('input[type=checkbox]', x); if (cb && !cb.checked) cb.click(); });

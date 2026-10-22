@@ -295,7 +295,7 @@ details.past77 .day.test .tg::after { content: "Test"; } details.past77 .day.eka
 details.past77 .day.test .tg::after, details.past77 .day.eka .tg::after { margin-left: 8px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--accT); font: 700 10px/1 var(--f-mono); color: var(--accT); text-transform: uppercase; vertical-align: 2px; }
 
 /* ───────────── 8. Sync pill + settings sheet ───────────── */
-.sync77 { position: fixed; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 20px;
+.sync77 { position: absolute; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 20px;
   border: 1px solid var(--line); background: var(--surf); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--fg2); font: 700 13px/1 var(--f-body); }
 .sync77::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
 .sync77[data-state="pending"]::before { background: transparent; border: 2px solid var(--acc); box-sizing: border-box; }
@@ -359,7 +359,7 @@ label.ex:has(input:checked) .bdg, label.ex.skip .bdg { color: var(--fg3); }
 .blk.fold > .bh-rule { display: none; }
 
 /* Sync pill: the existing #sync element (data-s = ok | saving | local | err | wait) */
-.sync.sync77 { position: fixed; margin: 0; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; height: 40px; padding: 0 16px; border-radius: 20px;
+.sync.sync77 { position: absolute; margin: 0; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; height: 40px; padding: 0 16px; border-radius: 20px;
   border: 1px solid var(--line); background: var(--surf); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--fg2); font: 700 13px/1 var(--f-body); letter-spacing: 0; text-transform: none; }
 .sync77 .dot { display: none; }
 .sync.sync77[data-s=ok] { color: var(--fg2); border-color: var(--line); }
@@ -450,11 +450,11 @@ label.ex.open .c { display: block; font: var(--t-body-s); color: var(--fg2); }
 label.ex:has(input:checked) .load77, label.ex.skip .load77 { background: var(--surf2); color: var(--fg3); }
 /* Sun dial on the AM hero too: sits behind the day number, shows today's % */
 details.day.today > summary { position: relative; }
-html[data-session="am"] details.day.today .dial77 { display: block; position: absolute; left: calc(var(--gutter-text) - 40px); top: 40px; width: 250px; height: 250px; z-index: 0; opacity: .95; pointer-events: none; }
+html[data-session="am"] details.day.today .dial77 { display: block; position: absolute; left: calc(var(--gutter-text) - 34px); top: 6px; width: 200px; height: 200px; z-index: 0; opacity: .6; pointer-events: none; }
 html[data-session="am"] details.day.today .dial77 .face { display: none; }
 html[data-session="am"] details.day.today .dial77 .sun { inset: 46px; box-shadow: 0 0 60px oklch(.8 .15 var(--h) / .45); }
 html[data-session="am"] details.day.today .dial77 .sun::after { content: ""; position: absolute; inset: 14px; border-radius: 50%; background: var(--bg); }
-html[data-session="am"] details.day.today .dn, html[data-session="am"] details.day.today .dd { position: relative; z-index: 1; }
+html[data-session="am"] details.day.today :is(.dn, .dd, .tg, .line77, .bar, .pct77) { position: relative; z-index: 1; }
 
 .blk.fold .bh::before { display: none; }
 
