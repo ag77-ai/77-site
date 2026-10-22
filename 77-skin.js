@@ -10,7 +10,6 @@
     connectPanel: '#tok',
     themeKey: '77-theme',
     nightFrom: 18, nightTo: 8,
-    restDefault: 60,
     lines: {
       42: 'Day one of the new plan. Easy run, easy bar, chest first. Showing up is already done.',
       43: 'Four reps, four evens. The first one decides the other three.',
@@ -87,7 +86,6 @@
   if (oldPast) { $$('details.day', oldPast).forEach(d => wrap.append(d)); oldPast.remove(); }
   const dayNum = d => +(($('.dn', d)?.textContent || '').match(/\d+/) || [0])[0];
   const daysSorted = $$('details.day').sort((a, b) => dayNum(a) - dayNum(b));
-  const firstDay = $('details.day');
   daysSorted.forEach(d => wrap.insertBefore(d, null));                 // append in order (moves them to the end, ordered)
   const buildTxt = ($('#bld') && $('#bld').textContent) || '';
   // keep the sync pill + token panel; drop everything else that the design replaces

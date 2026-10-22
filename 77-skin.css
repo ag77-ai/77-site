@@ -187,7 +187,7 @@ html[data-session="pm"] .dial77 { grid-area: dial; display: block; position: rel
 /* Food marker (JS adds .food to the matching .dnote / food element) */
 .food77 { margin-top: 18px; padding: 16px 18px; border-radius: 22px; border: 1.5px dashed var(--acc2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .food77 b { font: 800 22px/1 var(--f-display); }
-.food77 span { font: 400 14px/1.3 var(--f-body); color: var(--fg2); text-align: right; max-width: 150px; }
+.food77 span { font: 400 14px/1.3 var(--f-body); color: var(--fg2); }
 
 /* Morning pulse */
 .pulse77 { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 8px 0 18px; border-radius: var(--r-md); background: var(--surf); font: var(--t-body-s); color: var(--fg2); }
@@ -247,7 +247,7 @@ label.ex.skip .bx { border-style: dashed; border-color: var(--fg3); }
 label.ex.skip .txt::before { content: "Skipped"; font: var(--t-label); letter-spacing: .12em; text-transform: uppercase; color: var(--fg3); }
 
 /* Expanded (tap the text, not the box). Panel sits on --bg inside the card. */
-label.ex.open { grid-template-areas: "txt v bx" "go go go" "more more more"; }
+
 label.ex .more77 { display: none; }
 label.ex.open .more77 { grid-area: more; display: flex; flex-direction: column; gap: 12px; margin: 12px -4px -1px -10px; padding: 16px; border-radius: var(--r-md); background: var(--bg); color: var(--fg); cursor: default; }
 label.ex.open .more77 .key { display: block; font: 700 16px/1.4 var(--f-body); color: var(--fg); }
@@ -359,13 +359,13 @@ label.ex:has(input:checked) .bdg, label.ex.skip .bdg { color: var(--fg3); }
 .blk.fold > .bh-rule { display: none; }
 
 /* Sync pill: the existing #sync element (data-s = ok | saving | local | err | wait) */
-.sync.sync77 { position: absolute; margin: 0; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; height: 40px; padding: 0 16px; border-radius: 20px;
-  border: 1px solid var(--line); background: var(--surf); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--fg2); font: 700 13px/1 var(--f-body); letter-spacing: 0; text-transform: none; }
+.sync.sync77 { position: absolute; margin: 0; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; border-radius: 20px;
+  border: 1px solid var(--line); background: var(--surf); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); font: 700 13px/1 var(--f-body); letter-spacing: 0; text-transform: none; }
 .sync77 .dot { display: none; }
 .sync.sync77[data-s=ok] { color: var(--fg2); border-color: var(--line); }
-.sync.sync77[data-s=ok]::before { background: var(--acc); }
+
 .sync.sync77[data-s=saving] { color: var(--fg2); border-color: var(--line); }
-.sync.sync77[data-s=saving]::before { background: transparent; border: 2px solid var(--acc); box-sizing: border-box; animation: bl 1s ease-in-out infinite; }
+.sync.sync77[data-s=saving]::before { border: 2px solid var(--acc); box-sizing: border-box; }
 .sync.sync77[data-s=local], .sync.sync77[data-s=wait] { color: var(--fg3); border-color: var(--line); }
 .sync.sync77[data-s=local]::before, .sync.sync77[data-s=wait]::before { background: var(--fg3); }
 .sync.sync77[data-s=err] { color: var(--fg2); border-color: var(--line); }
@@ -378,7 +378,7 @@ label.ex:has(input:checked) .bdg, label.ex.skip .bdg { color: var(--fg3); }
 
 /* Daily quote (first row of the AM block) */
 .quote77 { padding: 16px 18px; border-radius: var(--r-md); background: var(--surf); display: flex; flex-direction: column; gap: 6px; }
-.quote77 .bi { font: 500 17px/1.4 var(--f-display); color: var(--fg); font-style: normal; }
+.quote77 .bi { font-style: normal; }
 .quote77 .qa { font: 500 12px/1 var(--f-mono); color: var(--fg3); letter-spacing: .08em; text-transform: uppercase; }
 
 /* Food marker with a live tick (the real checkbox lives inside) */
