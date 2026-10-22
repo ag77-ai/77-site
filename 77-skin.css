@@ -1,0 +1,425 @@
+/* 77 · Aurora skin — CSS variables + component CSS keyed to the existing class names.
+   Load AFTER the site's current <style>. Pair with 77-skin.js (adds the classes .cur / .open / .fold,
+   sets --p and --ci, builds the hero, week strip, workout mode and settings sheet).
+   Fonts: <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"> */
+
+/* ───────────── 1. Registered properties (so hue + progress animate) ───────────── */
+@property --p  { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --h  { syntax: '<number>'; inherits: true; initial-value: 285; }
+
+/* ───────────── 2. Tokens ───────────── */
+:root {
+  /* type */
+  --f-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --f-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --t-hero: 800 172px/.8 var(--f-display);   /* day number, AM hero */
+  --t-dial: 800 88px/.85 var(--f-display);   /* day number inside sun dial */
+  --t-timer: 800 84px/1 var(--f-display);    /* rest countdown */
+  --t-target: 800 76px/1 var(--f-display);   /* workout target ("4 reps") */
+  --t-pct: 800 40px/1 var(--f-display);      /* day % */
+  --t-btn-xl: 800 36px/1 var(--f-display);   /* SET DONE */
+  --t-ex-cur: 700 30px/1.05 var(--f-display);/* current exercise name */
+  --t-block: 700 26px/1 var(--f-display);    /* Morning / Afternoon / Evening */
+  --t-line: 500 25px/1.18 var(--f-display);  /* daily line */
+  --t-ex: 700 19px/1.05 var(--f-display);    /* exercise name */
+  --t-btn: 800 19px/1 var(--f-display);
+  --t-body: 400 17px/1.4 var(--f-body);      /* key cue (current card) */
+  --t-body-s: 400 16px/1.4 var(--f-body);    /* pointers, why, notes */
+  --t-rx: 500 15px/1.3 var(--f-mono);        /* prescription */
+  --t-tag: 700 14px/1.3 var(--f-mono);       /* day tag */
+  --t-meta: 500 13px/1 var(--f-mono);
+  --t-label: 700 12px/1 var(--f-mono);       /* uppercase labels, +.12em tracking */
+
+  /* spacing (4-pt) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s7: 32px;
+  --gutter: 12px;          /* page side padding for cards */
+  --gutter-text: 20px;     /* page side padding for text */
+  /* radii */
+  --r-sm: 14px; --r-md: 20px; --r-lg: 26px; --r-xl: 34px; --r-pill: 999px;
+  /* hit targets */
+  --hit: 48px; --tick: 54px; --cta: 62px; --cta-xl: 116px;
+  /* motion */
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --spring: cubic-bezier(.3,1.6,.5,1);
+}
+
+/* Dark — default, 03:15 */
+:root, :root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0a12; --sheet: #17151f;
+  --surf: rgba(255,255,255,.055); --surf2: rgba(255,255,255,.09);
+  --line: rgba(255,255,255,.10); --line2: rgba(255,255,255,.30);
+  --fg: #f6f4ff;   /* 18.1:1 */
+  --fg2: #cfcae0;  /* 12.4:1 */
+  --fg3: #aaa5be;  /*  8.3:1 */
+  --ink: #0b0a12; --ink2: #2a2638;            /* text ON colour cards: ≥ 11:1 / ≥ 8.3:1 */
+  --acc:  oklch(.85 .15 var(--h));            /* ≥ 10.4:1 on --bg at any hue */
+  --accT: var(--acc);                         /* accent used as text */
+  --acc2: oklch(.72 .19 calc(var(--h) + 75));
+  --onAcc: #0b0a12;
+  --miss: rgba(255,255,255,.16);
+  --orbA: oklch(.60 .22 var(--h) / .80); --orbB: oklch(.55 .24 calc(var(--h) + 80) / .60);
+  --scrim: rgba(0,0,0,.55);
+  --cardL: .86; --cardC: .13;                 /* colour-card lightness / chroma */
+  --doneBg: oklch(.27 .05 var(--ch)); --doneBd: oklch(.40 .07 var(--ch));
+}
+/* Light — 14:00 daylight */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f4fa; --sheet: #ffffff;
+  --surf: rgba(255,255,255,.75); --surf2: rgba(22,16,40,.06);
+  --line: rgba(22,16,40,.10); --line2: rgba(22,16,40,.32);
+  --fg: #15121f;   /* 16.9:1 */
+  --fg2: #3a3550;  /* 10.7:1 */
+  --fg3: #4f4a64;  /*  7.7:1 */
+  --ink: #15121f; --ink2: #3a3550;            /* ≥ 12.5:1 on light cards */
+  --acc:  oklch(.80 .15 var(--h));            /* fills only — never small text */
+  --accT: oklch(.39 .14 var(--h));            /* ≥ 7.1:1 on --bg at any hue */
+  --acc2: oklch(.78 .14 calc(var(--h) + 75));
+  --onAcc: #15121f;
+  --miss: rgba(22,16,40,.16);
+  --orbA: oklch(.86 .13 var(--h) / .95); --orbB: oklch(.86 .12 calc(var(--h) + 80) / .85);
+  --scrim: rgba(20,16,30,.35);
+  --cardL: .90; --cardC: .09;
+  --doneBg: oklch(.965 .018 var(--ch)); --doneBd: oklch(.87 .05 var(--ch));
+}
+
+/* Progress → hue. JS sets --p (0…1) on details.day. Cool violet at 0 → teal → lime → amber at 1. */
+details.day        { --h: calc(285 - 205 * var(--p)); transition: --h 1.4s ease, --p .9s var(--ease); }
+details.day.test   { --h: calc(70 + 25 * var(--p)); }    /* gold, locked */
+details.day.eka    { --h: calc(215 - 35 * var(--p)); }   /* moonlight teal, locked */
+
+/* ───────────── 3. Page ───────────── */
+html, body { background: var(--bg); color: var(--fg); }
+body { margin: 0; font: var(--t-body-s); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 40px); }
+a { color: var(--accT); } a:hover { color: var(--fg); }
+body::before { /* aurora light-field behind the hero; static, recolours with --h */
+  content: ""; position: fixed; z-index: -1; left: -90px; right: -90px; top: -150px; height: 560px; pointer-events: none;
+  background: radial-gradient(closest-side at 32% 50%, var(--orbA), transparent), radial-gradient(closest-side at 74% 34%, var(--orbB), transparent);
+  filter: blur(28px); }
+
+/* ───────────── 4. Day (details) + summary = hero ───────────── */
+details.day { margin: 0; border: 0; background: none; }
+details.day > summary { list-style: none; cursor: pointer; padding: var(--s2) var(--gutter-text) 0; display: grid;
+  grid-template-columns: auto 1fr; grid-template-areas: "dn dd" "tg tg" "line line" "bar bar"; column-gap: var(--s3); align-items: end; }
+details.day > summary::-webkit-details-marker { display: none; }
+.dn  { grid-area: dn; font: var(--t-hero); letter-spacing: -.06em; margin-left: -6px; color: var(--fg); }
+.dn .pre { display: none; }                         /* JS wraps the word "DAY" so only the number shows */
+.dd  { grid-area: dd; display: flex; flex-direction: column; gap: 6px; padding-bottom: 10px; font: 700 17px/1.1 var(--f-body); }
+.dd::before { content: "/ 100"; font: 700 13px/1 var(--f-mono); color: var(--fg2); }
+.tg  { grid-area: tg; margin-top: var(--s4); font: var(--t-tag); letter-spacing: .04em; color: var(--accT); text-transform: uppercase; }
+.line77 { grid-area: line; margin-top: 10px; font: var(--t-line); letter-spacing: -.01em; text-wrap: pretty; max-width: 330px; }
+
+/* Day progress */
+.bar  { grid-area: bar; position: relative; height: 12px; margin-top: 56px; border-radius: 6px; background: var(--surf2); overflow: visible; }
+.bar::before { content: attr(data-pct); position: absolute; left: 0; bottom: 22px; font: var(--t-pct); letter-spacing: -.03em; color: var(--accT); }
+.bar::after  { content: attr(data-count); position: absolute; right: 0; bottom: 24px; font: 500 14px/1 var(--f-mono); color: var(--fg2); }
+.fill { height: 100%; width: calc(var(--p) * 100%) !important; min-width: 12px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--acc2), var(--acc)); box-shadow: 0 0 18px var(--acc); transition: width .9s var(--ease); }
+
+/* Non-today days (future list, and rows inside Past days) render as compact rows */
+details.day:not(.today) > summary { grid-template-columns: 44px 1fr auto; grid-template-areas: "dn tg bar" "dn dd bar"; padding: 12px var(--s5); min-height: 60px; row-gap: 4px; }
+details.day:not(.today) .dn { font: 800 22px/1 var(--f-display); letter-spacing: -.02em; margin: 0; }
+details.day:not(.today) .dd { padding: 0; font: 400 13px/1 var(--f-body); color: var(--fg2); }
+details.day:not(.today) .dd::before, details.day:not(.today) .line77 { display: none; }
+details.day:not(.today) .tg { margin: 0; font: 700 14px/1.2 var(--f-body); color: var(--fg); letter-spacing: 0; }
+details.day:not(.today) .bar { width: 48px; height: 5px; margin: 0; align-self: center; }
+details.day:not(.today) .bar::before { content: attr(data-pct); bottom: 10px; left: auto; right: 0; font: 700 13px/1 var(--f-mono); }
+details.day:not(.today) .bar::after { display: none; }
+details.day:not(.today) .fill { box-shadow: none; }
+
+/* Test + Ekadashi banner (JS injects .banner77 at the top of the summary) */
+.banner77 { grid-column: 1 / -1; margin: var(--s3) calc(var(--gutter) - var(--gutter-text)) var(--s2); border: 1.5px solid var(--acc); border-radius: 22px; overflow: hidden; background: var(--surf);
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; font: 400 15px/1.35 var(--f-body); color: var(--fg); }
+.banner77 b { display: block; font: 800 20px/1 var(--f-display); text-transform: uppercase; color: var(--accT); margin-bottom: 4px; }
+details.day.test .banner77 { position: relative; }
+details.day.test .banner77::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: repeating-conic-gradient(var(--acc) 0 25%, transparent 0 50%) 0 0 / 14px 14px; }
+details.day.test .banner77 { padding-top: 28px; }
+
+/* Sun dial hero (PM / evening) — JS injects .dial77 into today's summary and sets html[data-session="pm"] */
+.dial77 { display: none; }
+html[data-session="pm"] details.day.today > summary { grid-template-columns: 1fr; grid-template-areas: "dial" "tg" "line" "bar"; text-align: center; justify-items: center; }
+html[data-session="pm"] details.day.today .dn, html[data-session="pm"] details.day.today .dd { display: none; }
+html[data-session="pm"] details.day.today .bar { justify-self: stretch; text-align: left; }
+html[data-session="pm"] .dial77 { grid-area: dial; display: block; position: relative; width: 290px; height: 290px; --day: 0; }
+.dial77 .ticks, .dial77 .past { position: absolute; inset: 0; border-radius: 50%; }
+.dial77 .ticks { background: repeating-conic-gradient(var(--line2) 0 1.1deg, transparent 1.1deg 3.6deg);
+  -webkit-mask: radial-gradient(circle, transparent 66%, #000 66.5% 70%, transparent 70.5%); mask: radial-gradient(circle, transparent 66%, #000 66.5% 70%, transparent 70.5%); }
+.dial77 .past { background: conic-gradient(var(--fg2) calc(var(--day) * 360deg), var(--accT) 0 calc(var(--day) * 360deg + 3.6deg), transparent 0);
+  -webkit-mask: repeating-conic-gradient(#000 0 1.1deg, transparent 1.1deg 3.6deg), radial-gradient(circle, transparent 66%, #000 66.5% 72%, transparent 72.5%); -webkit-mask-composite: source-in;
+  mask: repeating-conic-gradient(#000 0 1.1deg, transparent 1.1deg 3.6deg) intersect, radial-gradient(circle, transparent 66%, #000 66.5% 72%, transparent 72.5%); }
+.dial77 .sun { position: absolute; inset: 54px; border-radius: 50%; background: conic-gradient(from -90deg, var(--acc2), var(--acc) calc(var(--p) * 360deg), var(--surf2) 0); box-shadow: 0 0 50px oklch(.8 .15 var(--h) / .35); }
+.dial77 .face { position: absolute; inset: 64px; border-radius: 50%; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.dial77 .face small { font: var(--t-label); color: var(--fg2); }
+.dial77 .face strong { font: var(--t-dial); letter-spacing: -.05em; color: var(--fg); }
+.dial77 .face span { font: 700 13px/1 var(--f-mono); color: var(--fg2); }
+
+/* Week compliance strip (JS injects .week77 after the summary of today) */
+.week77 { display: flex; align-items: center; justify-content: space-between; margin: 18px var(--gutter-text) 0; }
+.week77 .days { display: flex; gap: 7px; }
+.week77 .d { width: 22px; display: flex; flex-direction: column; align-items: center; gap: 3px; font: 500 11px/1 var(--f-mono); color: var(--fg3); }
+.week77 .d.now { color: var(--accT); font-weight: 700; }
+.week77 .seg { width: 100%; height: 6px; border-radius: 3px; border: 1px solid var(--line2); box-sizing: border-box; }
+.week77 .seg.done { background: var(--acc); border-color: var(--acc); }
+.week77 .seg.miss { background: var(--miss); border-color: var(--miss); }
+.week77 .seg.part { background: var(--surf2); border-color: var(--acc); }
+.week77 .seg.rest { border: 0; }
+.week77 .sum { text-align: right; font: 700 16px/1.2 var(--f-body); }
+.week77 .sum span { display: block; font: 400 14px/1.2 var(--f-body); color: var(--fg2); }
+
+/* ───────────── 5. Body, blocks, headers ───────────── */
+.bd { padding: 0 var(--gutter) var(--s7); }
+.dnote { margin: var(--s6) 8px 0; font: var(--t-body-s); color: var(--fg2); }
+.blk { margin-top: 26px; display: flex; flex-direction: column; gap: var(--s2); }
+.bh  { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; padding: 0 8px; cursor: pointer;
+  font: var(--t-block); letter-spacing: -.02em; color: var(--fg); }
+.bh .time { font: var(--t-meta); color: var(--fg3); letter-spacing: 0; margin-left: 10px; }     /* JS splits the header text */
+.bh .cnt  { margin-left: auto; font: 700 15px/1 var(--f-mono); color: var(--accT); letter-spacing: 0; }
+.bh .rule { display: block; font: 400 15px/1.35 var(--f-body); color: var(--fg2); letter-spacing: 0; }    /* long PM rules live in a second line */
+.bh::after { content: ""; flex: none; width: 9px; height: 9px; border-right: 2px solid var(--fg3); border-bottom: 2px solid var(--fg3); transform: rotate(225deg); transition: transform .25s; }
+.blk.fold .bh::after { transform: rotate(45deg); }
+.blk.fold > :not(.bh) { display: none; }       /* collapsed block = header + summary line only */
+.blk.fold .bh::before { content: attr(data-summary); order: 3; font: 400 15px/1 var(--f-body); color: var(--fg3); letter-spacing: 0; }
+.sh { padding: 12px 8px 0; font: var(--t-label); letter-spacing: .12em; text-transform: uppercase; color: var(--fg3); }
+
+/* Food marker (JS adds .food to the matching .dnote / food element) */
+.food77 { margin-top: 18px; padding: 16px 18px; border-radius: 22px; border: 1.5px dashed var(--acc2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.food77 b { font: 800 22px/1 var(--f-display); }
+.food77 span { font: 400 14px/1.3 var(--f-body); color: var(--fg2); text-align: right; max-width: 150px; }
+
+/* Morning pulse */
+.pulse77 { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 8px 0 18px; border-radius: var(--r-md); background: var(--surf); font: var(--t-body-s); color: var(--fg2); }
+.pulse77 input { width: 64px; height: 42px; border-radius: var(--r-sm); border: 1px solid var(--line2); background: transparent; color: var(--fg); text-align: center; font: 700 18px/1 var(--f-mono); }
+
+/* ───────────── 6. Exercise card — label.ex ─────────────
+   States: default (unticked) · .cur (current) · :has(:checked) (ticked) · .skip (skipped) · .open (expanded)
+   JS sets --ci (1-based index of the exercise in the day). */
+label.ex {
+  --ch: calc(330 - var(--ci, 1) * 26);                       /* card hue, steps 26° per exercise */
+  --card: oklch(var(--cardL) var(--cardC) var(--ch));
+  --tickc: oklch(.84 .14 var(--ch));
+  position: relative; display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: "txt v bx"; align-items: start; column-gap: 10px;
+  padding: 13px 12px 13px 18px; border-radius: var(--r-lg); border: 1.5px solid var(--card); background: var(--card); color: var(--ink);
+  cursor: pointer; transition: background .4s, box-shadow .4s, border-color .4s; }
+details.day.test label.ex { --ch: calc(40 + mod(var(--ci, 1), 4) * 18); }
+details.day.eka  label.ex { --ch: calc(175 + mod(var(--ci, 1), 5) * 18); }
+label.ex input[type=checkbox] { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.ex .txt { grid-area: txt; min-width: 0; display: flex; flex-direction: column; gap: 5px; padding-top: 2px; }
+label.ex b    { font: var(--t-ex); letter-spacing: -.01em; color: inherit; }
+label.ex .p   { font: var(--t-rx); color: var(--ink2); }
+label.ex .key { display: none; font: var(--t-body); color: var(--ink); text-wrap: pretty; }
+label.ex .pts, label.ex .w, label.ex .up, label.ex .note77, label.ex .acts77 { display: none; }
+
+/* Tick box */
+label.ex .bx { grid-area: bx; position: relative; width: var(--tick); height: var(--tick); border-radius: 50%; border: 2.5px solid var(--ink); box-sizing: border-box; display: grid; place-items: center; transition: background .2s, border-color .2s; }
+label.ex .bx::after { content: ""; width: 10px; height: 20px; border-right: 4px solid #0b0a12; border-bottom: 4px solid #0b0a12; transform: translateY(-2px) rotate(45deg); opacity: 0; }
+label.ex .bx::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--tickc); opacity: 0; }
+label.ex:active .bx { transform: scale(.94); }
+
+/* Ticked */
+label.ex:has(input:checked) { background: var(--doneBg); border-color: var(--doneBd); color: var(--fg2); }
+label.ex:has(input:checked) .p { color: var(--fg3); }
+label.ex:has(input:checked) .bx { background: var(--tickc); border-color: var(--tickc); }
+label.ex:has(input:checked) .bx::after { opacity: 1; animation: tick-pop .45s var(--spring) both; }
+label.ex:has(input:checked) .bx::before { animation: tick-ring .7s ease-out both; }
+@keyframes tick-pop  { 0% { transform: translateY(-2px) rotate(45deg) scale(.2); } 60% { transform: translateY(-2px) rotate(45deg) scale(1.2); } 100% { transform: translateY(-2px) rotate(45deg) scale(1); } }
+@keyframes tick-ring { 0% { transform: scale(.7); opacity: .9; } 100% { transform: scale(1.9); opacity: 0; } }
+
+/* Current */
+label.ex.cur { padding: 20px 16px 16px 20px; grid-template-areas: "txt v bx" "go go go";
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 6px var(--card), 0 14px 44px oklch(.8 .14 var(--ch) / .45); }
+label.ex.cur .txt::before { content: "Now · " attr(data-idx); font: var(--t-label); letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); }
+label.ex.cur b { font: var(--t-ex-cur); }
+label.ex.cur .key { display: block; }
+label.ex .go77 { display: none; }
+label.ex.cur .go77 { grid-area: go; display: flex; align-items: center; justify-content: center; gap: 10px; height: var(--cta); margin-top: 14px; border: 0; border-radius: var(--r-pill);
+  background: #0b0a12; color: #f6f4ff; font: var(--t-btn); cursor: pointer; }
+label.ex.cur .go77::before { content: ""; border-left: 13px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+label.ex.cur .go77:active { transform: scale(.97); }
+
+/* Skipped (JS toggles .skip from "Skip today" in the expanded panel; stored in the note as "skipped") */
+label.ex.skip { background: transparent; border-style: dashed; border-color: var(--fg3); color: var(--fg2); box-shadow: none; }
+label.ex.skip b { text-decoration: line-through; }
+label.ex.skip .p { color: var(--fg3); }
+label.ex.skip .bx { border-style: dashed; border-color: var(--fg3); }
+label.ex.skip .txt::before { content: "Skipped"; font: var(--t-label); letter-spacing: .12em; text-transform: uppercase; color: var(--fg3); }
+
+/* Expanded (tap the text, not the box). Panel sits on --bg inside the card. */
+label.ex.open { grid-template-areas: "txt v bx" "go go go" "more more more"; }
+label.ex .more77 { display: none; }
+label.ex.open .more77 { grid-area: more; display: flex; flex-direction: column; gap: 12px; margin: 12px -4px -1px -10px; padding: 16px; border-radius: var(--r-md); background: var(--bg); color: var(--fg); cursor: default; }
+label.ex.open .more77 .key { display: block; font: 700 16px/1.4 var(--f-body); color: var(--fg); }
+label.ex.cur.open .more77 .key { display: none; }
+label.ex.open .pts { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: pt; }
+label.ex.open .pts li { display: flex; gap: 10px; font: var(--t-body-s); counter-increment: pt; }
+label.ex.open .pts li::before { content: counter(pt); flex: none; font: 700 13px/1.6 var(--f-mono); color: var(--accT); }
+label.ex.open .w  { display: block; font: var(--t-body-s); color: var(--fg2); }
+label.ex.open .w b { font: 700 16px/1.4 var(--f-body); color: var(--fg); }
+label.ex.open .up { display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; border-radius: 16px; background: var(--surf2); font: 700 16px/1.35 var(--f-body); }
+label.ex.open .up::before { content: "Move up"; font: 700 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accT); }
+label.ex.open .note77, label.ex.open .more77 textarea, label.ex.open .more77 input[type=text] { display: block; width: 100%; box-sizing: border-box; min-height: 64px; border-radius: var(--r-sm); border: 1px solid var(--line2); background: transparent; color: var(--fg); padding: 12px; font: var(--t-body-s); resize: none; }
+label.ex.open .acts77 { display: flex; gap: 10px; }
+.acts77 button, .acts77 a { flex: 1; height: var(--hit); border-radius: var(--r-pill); border: 1px solid var(--line2); background: transparent; color: var(--fg2); font: 700 15px/1 var(--f-body); display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; }
+
+/* Video link .v — PM cards show it as a 46px icon beside the tick; AM keeps it in the expanded panel */
+label.ex .v { grid-area: v; display: none; }
+.blk.pm label.ex .v { display: grid; place-items: center; width: 46px; height: 46px; margin-top: 4px; border-radius: 50%; background: rgba(0,0,0,.10); color: var(--ink); font-size: 0; text-decoration: none; }
+.blk.pm label.ex .v::before { content: ""; margin-left: 4px; border-left: 13px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+.blk.pm label.ex .v.missing, .blk.pm label.ex .v:not([href]), .blk.pm label.ex .v[href=""] { background: transparent; border: 2px dashed currentColor; box-sizing: border-box; opacity: .7; pointer-events: none; }
+.blk.pm label.ex:has(input:checked) .v, .blk.pm label.ex.skip .v { background: var(--surf2); color: var(--fg2); }
+label.ex.open .more77 .v { display: flex; }   /* AM: JS clones .v into .acts77 as a "Video" pill */
+
+/* Variants */
+label.ex.run b::before  { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; border: 2px solid currentColor; vertical-align: 2px; }
+label.ex.tech .p::after { content: " · technical"; }
+label.ex.fin            { --ch: 15; }        /* finisher always ends on hot coral */
+label.ex.fin b          { text-transform: uppercase; letter-spacing: .02em; }
+
+/* Test-day result field (JS injects .res77 for exercises in a .test day) */
+.res77 { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.res77 input { width: 120px; height: 48px; border-radius: 16px; border: 2px solid var(--ink); background: rgba(255,255,255,.35); color: var(--ink); text-align: center; font: 700 20px/1 var(--f-mono); }
+.res77 span { font: 400 14px/1.3 var(--f-body); color: var(--ink2); }
+
+/* ───────────── 7. Past days (JS wraps all days before today in details.past77) ───────────── */
+details.past77 { margin: 32px var(--gutter) 0; border-radius: var(--r-lg); background: var(--surf); overflow: hidden; }
+details.past77 > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 var(--s5); cursor: pointer; font: 700 18px/1 var(--f-display); }
+details.past77 > summary::-webkit-details-marker { display: none; }
+details.past77 > summary span { margin-left: auto; margin-right: 14px; font: var(--t-meta); color: var(--fg2); }
+details.past77 > summary::after { content: ""; width: 9px; height: 9px; border-right: 2px solid var(--fg3); border-bottom: 2px solid var(--fg3); transform: rotate(45deg); transition: transform .25s; }
+details.past77[open] > summary::after { transform: rotate(225deg); }
+details.past77 details.day { border-top: 1px solid var(--line); }
+details.past77 details.day[open] .bd { padding-bottom: var(--s5); }
+details.past77 .day.test .tg::after { content: "Test"; } details.past77 .day.eka .tg::after { content: "Ekadashi"; }
+details.past77 .day.test .tg::after, details.past77 .day.eka .tg::after { margin-left: 8px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--accT); font: 700 10px/1 var(--f-mono); color: var(--accT); text-transform: uppercase; vertical-align: 2px; }
+
+/* ───────────── 8. Sync pill + settings sheet ───────────── */
+.sync77 { position: fixed; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 20px;
+  border: 1px solid var(--line); background: var(--surf); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--fg2); font: 700 13px/1 var(--f-body); }
+.sync77::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
+.sync77[data-state="pending"]::before { background: transparent; border: 2px solid var(--acc); box-sizing: border-box; }
+.sync77[data-state="offline"]::before { background: var(--fg3); }
+.sync77[data-state="error"]::before { background: oklch(.75 .17 40); }
+.sheet77 { position: fixed; inset: 0; z-index: 30; display: none; align-items: flex-end; background: var(--scrim); }
+.sheet77.on { display: flex; }
+.sheet77 .pane { width: 100%; padding: 12px 20px calc(env(safe-area-inset-bottom) + 28px); box-sizing: border-box; border-radius: 34px 34px 0 0; background: var(--sheet); display: flex; flex-direction: column; gap: 18px; animation: sheet-up .32s var(--ease); }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+.sheet77 h2 { margin: 0; font: 700 26px/1 var(--f-display); }
+.sheet77 .lbl { font: var(--t-label); letter-spacing: .12em; color: var(--fg3); }
+.seg77 { padding: 4px; border-radius: 26px; background: var(--surf2); display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
+.seg77 button { height: var(--hit); border: 0; border-radius: 22px; background: transparent; color: var(--fg2); font: 700 16px/1 var(--f-body); }
+.seg77 button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.btn77 { height: 50px; border-radius: var(--r-pill); border: 1px solid var(--line2); background: transparent; color: var(--fg); font: 700 15px/1 var(--f-body); }
+.btn77.pri { border: 0; background: var(--acc); color: var(--onAcc); font: 800 16px/1 var(--f-display); }
+
+/* ───────────── 9. Workout mode (built by 77-skin.js) ───────────── */
+.wo77 { position: fixed; inset: 0; z-index: 25; display: none; flex-direction: column; padding: calc(env(safe-area-inset-top) + 14px) 20px calc(env(safe-area-inset-bottom) + 20px); background: var(--bg); color: var(--fg); }
+.wo77.on { display: flex; }
+.wo77 .top { display: flex; align-items: center; gap: 14px; }
+.wo77 .x { width: var(--hit); height: var(--hit); border-radius: 50%; border: 1px solid var(--line2); background: var(--surf); color: var(--fg); font: 700 20px/1 var(--f-body); }
+.wo77 .prog { flex: 1; height: 8px; border-radius: 4px; background: var(--surf2); overflow: hidden; }
+.wo77 .prog i { display: block; height: 100%; width: calc(var(--p) * 100%); background: linear-gradient(90deg, var(--acc2), var(--acc)); }
+.wo77 .blkname { margin-top: 26px; font: var(--t-label); letter-spacing: .1em; text-transform: uppercase; color: var(--accT); }
+.wo77 .name { margin-top: 8px; font: 800 40px/1 var(--f-display); letter-spacing: -.03em; }
+.wo77 .rx { margin-top: 8px; font: 500 17px/1.3 var(--f-mono); color: var(--fg2); }
+.wo77 .dots { display: flex; gap: 6px; margin-top: 14px; }
+.wo77 .dots i { width: 14px; height: 12px; border-radius: 6px; border: 1.5px solid var(--line2); box-sizing: border-box; transition: all .3s; }
+.wo77 .dots i.done { background: var(--acc); border-color: var(--acc); }
+.wo77 .dots i.now { width: 30px; background: var(--fg); border-color: var(--fg); }
+.wo77 .mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+.wo77 .set { font: 700 14px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg2); }
+.wo77 .target { font: var(--t-target); letter-spacing: -.04em; color: var(--accT); }
+.wo77 .cue { font: 400 19px/1.4 var(--f-body); max-width: 300px; }
+.wo77 .ring { --f: 1; position: relative; width: 250px; height: 250px; border-radius: 50%; background: conic-gradient(var(--acc) calc(var(--f) * 360deg), var(--line) 0); box-shadow: 0 0 60px oklch(.85 .15 var(--h) / .25); }
+.wo77 .ring::after { content: ""; position: absolute; inset: 12px; border-radius: 50%; background: var(--bg); }
+.wo77 .ring > * { position: relative; z-index: 1; }
+.wo77 .ring .t { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font: var(--t-timer); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.wo77 .ring .t small { font: 400 16px/1.2 var(--f-body); color: var(--fg2); letter-spacing: 0; }
+.wo77 .restbtns { display: flex; gap: 10px; }
+.wo77 .restbtns button { height: var(--hit); padding: 0 22px; border-radius: 24px; border: 1px solid var(--line2); background: var(--surf); color: var(--fg); font: 700 16px/1 var(--f-mono); }
+.wo77 .next { display: flex; justify-content: space-between; gap: 12px; padding: 0 6px 14px; font: 400 15px/1.3 var(--f-body); color: var(--fg2); }
+.wo77 .next b { color: var(--fg); text-align: right; }
+.wo77 .done { height: var(--cta-xl); border: 0; border-radius: 40px; background: var(--acc); color: var(--onAcc); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  font: var(--t-btn-xl); letter-spacing: -.02em; text-transform: uppercase; box-shadow: 0 0 50px oklch(.85 .15 var(--h) / .35); }
+.wo77 .done small { font: 700 14px/1 var(--f-mono); text-transform: none; letter-spacing: 0; }
+.wo77 .done:active { transform: scale(.97); }
+.restpill77 { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%); z-index: 22; display: none; height: 56px; padding: 0 22px; border-radius: 28px; border: 0;
+  background: var(--acc); color: var(--onAcc); font: 800 17px/1 var(--f-display); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.restpill77.on { display: block; }
+
+/* ───────────── 10. Motion safety ───────────── */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ───────────── 11. Site adaptations (Claude, 22 Oct 2026) ───────────── */
+.w { max-width: none; padding: 0; margin: 0; }
+.bdg { display: inline-block; font: 700 11px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); opacity: .85; }
+label.ex:has(input:checked) .bdg, label.ex.skip .bdg { color: var(--fg3); }
+.bh-rule { margin: 0 8px 4px; font: 400 14px/1.4 var(--f-body); color: var(--fg3); }
+.blk.fold > .bh-rule { display: none; }
+
+/* Sync pill: the existing #sync element (data-s = ok | saving | local | err | wait) */
+.sync.sync77 { position: fixed; margin: 0; top: calc(env(safe-area-inset-top) + 8px); right: 16px; z-index: 20; height: 40px; padding: 0 16px; border-radius: 20px;
+  border: 1px solid var(--line); background: var(--surf); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--fg2); font: 700 13px/1 var(--f-body); letter-spacing: 0; text-transform: none; }
+.sync77 .dot { display: none; }
+.sync.sync77[data-s=ok] { color: var(--fg2); border-color: var(--line); }
+.sync.sync77[data-s=ok]::before { background: var(--acc); }
+.sync.sync77[data-s=saving] { color: var(--fg2); border-color: var(--line); }
+.sync.sync77[data-s=saving]::before { background: transparent; border: 2px solid var(--acc); box-sizing: border-box; animation: bl 1s ease-in-out infinite; }
+.sync.sync77[data-s=local], .sync.sync77[data-s=wait] { color: var(--fg3); border-color: var(--line); }
+.sync.sync77[data-s=local]::before, .sync.sync77[data-s=wait]::before { background: var(--fg3); }
+.sync.sync77[data-s=err] { color: var(--fg2); border-color: var(--line); }
+.sync.sync77[data-s=err]::before { background: oklch(.75 .17 40); }
+.sheet77 .tok { margin: 0; background: var(--surf); border-color: var(--line2); color: var(--fg); }
+.sheet77 .tok p { color: var(--fg2); } .sheet77 .tok h3 { color: var(--accT); }
+.sheet77 .tok input { background: transparent; color: var(--fg); border-color: var(--line2); }
+.sheet77 .tok button { font: 700 14px/1 var(--f-body); }
+.sheet77 .pane { max-width: 720px; margin: 0 auto; }
+
+/* Daily quote (first row of the AM block) */
+.quote77 { padding: 16px 18px; border-radius: var(--r-md); background: var(--surf); display: flex; flex-direction: column; gap: 6px; }
+.quote77 .bi { font: 500 17px/1.4 var(--f-display); color: var(--fg); font-style: normal; }
+.quote77 .qa { font: 500 12px/1 var(--f-mono); color: var(--fg3); letter-spacing: .08em; text-transform: uppercase; }
+
+/* Food marker with a live tick (the real checkbox lives inside) */
+.food77 { position: relative; cursor: pointer; }
+.food77 input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.food77 .bx { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid var(--fg); display: grid; place-items: center; box-sizing: border-box; }
+.food77 .bx::after { content: ""; width: 8px; height: 15px; border-right: 3.5px solid var(--onAcc); border-bottom: 3.5px solid var(--onAcc); transform: translateY(-2px) rotate(45deg); opacity: 0; }
+.food77:has(input:checked) { border-style: solid; border-color: var(--acc); }
+.food77:has(input:checked) .bx { background: var(--acc); border-color: var(--acc); }
+.food77:has(input:checked) .bx::after { opacity: 1; }
+.food77 span { max-width: none; flex: 1; text-align: left; }
+
+/* Future days ("Coming up") as compact rows */
+.next77 { margin: 36px var(--gutter-text) 6px; font: 700 18px/1 var(--f-display); }
+details.day:not(.today):not(details.past77 details.day) { margin: 8px var(--gutter) 0; border-radius: 20px; background: var(--surf); }
+details.day:not(.today)[open] { padding-bottom: 8px; }
+details.day:not(.today) .week77, details.day:not(.today) .dial77, details.day:not(.today) .banner77 { display: none; }
+details.day:not(.today) label.ex.cur { padding: 13px 12px 13px 18px; box-shadow: none; }
+details.day:not(.today) label.ex .go77 { display: none !important; }
+
+/* Notes inside the expanded panel (input.nt is added by the site's notes script) */
+label.ex.open .more77 .nt { margin: 0; }
+
+/* ───────────── 12. Desktop (Mac dock app, ≥ 900 px) ───────────── */
+@media (min-width: 900px) {
+  .w { max-width: 1360px; margin: 0 auto; padding: 0 32px; }
+  body::before { height: 720px; }
+  details.day.today { display: grid; grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); column-gap: 56px; align-items: start; }
+  details.day.today > summary { grid-column: 1; position: sticky; top: 24px; padding-top: 72px; }
+  details.day.today > .week77 { grid-column: 1; margin: 18px var(--gutter-text) 0; }
+  details.day.today > .bd { grid-column: 2; grid-row: 1 / span 3; padding-top: 64px; }
+  .line77 { max-width: 420px; }
+  .blk { margin-top: 20px; }
+  .wo77 { padding-left: max(24px, calc(50vw - 380px)); padding-right: max(24px, calc(50vw - 380px)); }
+  .wo77 .name { font-size: 56px; }
+  .wo77 .ring { width: 320px; height: 320px; }
+  .next77, details.day:not(.today):not(details.past77 details.day), details.past77 { max-width: 760px; }
+}
+@media (min-width: 1280px) {
+  details.day.today > .bd { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; align-items: start; grid-auto-flow: dense; }
+  details.day.today > .bd > .dnote { grid-column: 1 / -1; }
+  details.day.today > .bd > .blk.am, details.day.today > .bd > .food77 { grid-column: 1; }
+  details.day.today > .bd > .blk.pm { grid-column: 2; }
+}
