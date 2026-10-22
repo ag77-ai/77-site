@@ -150,6 +150,7 @@
   function resPaint(day) { $$('label.ex', day).forEach((x, i) => { const inp = $('.res77 input', x); if (!inp || document.activeElement === inp) return; const o = O_(); inp.value = (o && o[resKey(day, i)]) || (() => { try { return localStorage.getItem('77-' + resKey(day, i)) || ''; } catch (e) { return ''; } })(); }); }
 
   days.forEach(day => {
+    $$('.dnote', day).forEach(d => { if (/^\s*Ekadashi/i.test(d.textContent)) d.remove(); });
     const tagTxt = ($('.tg', day)?.textContent || '');
     if (/TEST|TRIAL/i.test(tagTxt)) day.classList.add('test');
     if (/EKADASHI/i.test(tagTxt)) day.classList.add('eka');
@@ -168,6 +169,9 @@
       ex.style.setProperty('--ci', i + 1);
       const txt = $('.txt', ex); if (!txt || $('.more77', ex)) return;
       txt.dataset.idx = String(i + 1).padStart(2, '0');
+      const srcTxt = (($('.key', ex)?.textContent || '') + ' ' + ($('.pts', ex)?.textContent || '') + ' ' + ($('.c', ex)?.textContent || '')).replace(/\u00a0/g, ' ');
+      const lm = srcTxt.match(/(\d+(?:\.\d+)?\s*kg(?:\s*(?:plates?(?:\s*(?:in each hand|per hand))?|per hand|in each hand|bell|ball))?)/i) || srcTxt.match(/\b(2\.7 plates|bodyweight)\b/i);
+      if (lm && $('.p', ex)) { const chip = el('span', 'load77', lm[1].replace(/\s+/g, ' ')); $('.p', ex).after(chip); }
       const more = el('div', 'more77');
       const key = $('.key', ex); if (key) more.append(key.cloneNode(true));
       ['.stp', '.c', '.pts', '.w', '.up'].forEach(s => { const node = $(s, ex); if (node) more.append(node); });
@@ -227,10 +231,10 @@
       const bx = $$('label.ex', blk), dn = bx.filter(x => $('input', x)?.checked).length, handled = bx.filter(x => $('input', x)?.checked || x.classList.contains('skip')).length;
       const cnt = $('.bh .cnt', blk); if (cnt) cnt.textContent = dn + '/' + bx.length;
       const bh = $('.bh', blk); if (bh) bh.dataset.summary = handled === bx.length && bx.length ? 'done' : bx.length + (bx.length === 1 ? ' item' : ' exercises');
-      if (day === today && blk.dataset.userFold == null) blk.classList.toggle('fold', !desktop() && !(cur && blk.contains(cur)));
+      if (day === today && blk.dataset.userFold == null) blk.classList.toggle('fold', !(cur && blk.contains(cur)));
     });
     if (day === today) {
-      document.documentElement.dataset.session = cur && cur.closest('.blk.am') ? 'am' : 'pm';
+      const amLeft = cur && cur.closest('.blk.am'); document.documentElement.dataset.session = (amLeft && new Date().getHours() < 12) ? 'am' : 'pm';
       document.documentElement.style.setProperty('--p', p.toFixed(3));
       Week.render();
     }
@@ -244,7 +248,6 @@
     const dial = el('div', 'dial77', `<div class="ticks"></div><div class="past"></div><div class="sun"></div><div class="face"><small>DAY</small><strong>${n}</strong><span>${$('.dd', today)?.textContent || ''}</span></div>`);
     dial.style.setProperty('--day', ((n - 1) / 100).toFixed(2)); sum.prepend(dial);
     if (today.classList.contains('test')) sum.prepend(el('div', 'banner77', '<div><b>Test day</b>Fresh, full effort, every number written down. Lines only go up.</div>'));
-    if (today.classList.contains('eka')) sum.prepend(el('div', 'banner77', '<div><b>Ekadashi</b>Water only until Meal 2. Training unchanged — train first, then eat. Never compensate.</div>'));
     sum.addEventListener('click', e => e.preventDefault());
   }
 
@@ -273,6 +276,8 @@
     <div class="slot-tools" style="display:flex;gap:8px;flex-wrap:wrap"></div><span class="lbl">Build ${buildTxt}</span></div>`);
   document.body.append(sheet);
   if (pill) { pill.classList.add('sync77'); pill.removeAttribute('onclick'); pill.addEventListener('click', () => { sheet.classList.add('on'); }); }
+  const st = el('div', 'syncstate77'); $('.slot-sync', sheet).append(st);
+  const mirror = () => { const t = $('#synct'); const s = pill?.dataset.s || ''; st.textContent = (t ? t.textContent : '') ; st.dataset.s = s; }; mirror(); setInterval(mirror, 1000);
   const conn = $(CFG.connectPanel); if (conn) { conn.style.display = 'block'; $('.slot-sync', sheet).append(conn); }
   if (reset) { const b = $('button', reset); if (b) { b.classList.add('btn77'); $('.slot-tools', sheet).append(b); } reset.remove(); }
   sheet.addEventListener('click', e => { if (e.target === sheet || e.target.closest('.close')) sheet.classList.remove('on'); const b = e.target.closest('.seg77 button'); if (b) { try { localStorage.setItem(CFG.themeKey, b.dataset.v); } catch (x) {} applyTheme(); } });
