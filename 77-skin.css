@@ -272,7 +272,7 @@ label.ex .v { grid-area: v; display: none; }
 label.ex.open .more77 .v { display: flex; }   /* AM: JS clones .v into .acts77 as a "Video" pill */
 
 /* Variants */
-label.ex.run b::before  { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; border: 2px solid currentColor; vertical-align: 2px; }
+label.ex.run .txt > b::before  { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; border: 2px solid currentColor; vertical-align: 2px; }
 label.ex.tech .p::after { content: " · technical"; }
 label.ex.fin            { --ch: 15; }        /* finisher always ends on hot coral */
 label.ex.fin b          { text-transform: uppercase; letter-spacing: .02em; }
@@ -422,4 +422,16 @@ label.ex.open .more77 .nt { margin: 0; }
   details.day.today > .bd > .dnote { grid-column: 1 / -1; }
   details.day.today > .bd > .blk.am, details.day.today > .bd > .food77 { grid-column: 1; }
   details.day.today > .bd > .blk.pm { grid-column: 2; }
+}
+
+/* fixes 22 Oct after first live check */
+.bh .time { white-space: nowrap; }
+.blk.fold .bh::before { white-space: nowrap; }
+label.ex .stp, label.ex .c { display: none; }
+label.ex.open .stp { display: block; font: 700 16px/1.4 var(--f-body); color: var(--accT); }
+label.ex.open .c { display: block; font: var(--t-body-s); color: var(--fg2); }
+@media (min-width: 900px) {
+  details.day.today > summary { grid-row: 1; }
+  details.day.today > .week77 { grid-row: 2; }
+  details.day.today > .bd { grid-row: 1 / span 2; }
 }

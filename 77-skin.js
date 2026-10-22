@@ -170,7 +170,7 @@
       txt.dataset.idx = String(i + 1).padStart(2, '0');
       const more = el('div', 'more77');
       const key = $('.key', ex); if (key) more.append(key.cloneNode(true));
-      ['.pts', '.w', '.up'].forEach(s => { const node = $(s, ex); if (node) more.append(node); });
+      ['.stp', '.c', '.pts', '.w', '.up'].forEach(s => { const node = $(s, ex); if (node) more.append(node); });
       const note = $('textarea, input[type=text]', ex); if (note) more.append(note);
       const acts = el('div', 'acts77');
       const v = $('.v', ex);
@@ -196,7 +196,7 @@
     $$('.blk', day).forEach(blk => {
       const bh = $('.bh', blk); if (!bh || bh.dataset.done) return; bh.dataset.done = 1;
       const raw = bh.textContent.replace(/ /g, ' ').replace(/[\u{1F300}-\u{1FAFF}☀-➿]️?/gu, '').replace(/\s+/g, ' ').trim();
-      const parts = raw.split(/\s·\s/); const title = parts[0] || '', time = parts[1] || '', rest = parts.slice(2);
+      const parts = raw.split(/\s·\s/); const title = parts[0] || ''; let time = parts[1] || ''; const rest = parts.slice(2); if (/^evening/i.test(title)) { time = '30 min'; }
       bh.innerHTML = '';
       const t = el('span', '', title.toLowerCase().replace(/^\w/, c => c.toUpperCase()));
       if (time) t.append(el('span', 'time', time));
