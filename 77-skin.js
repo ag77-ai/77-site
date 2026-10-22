@@ -378,35 +378,48 @@
       <div class="mid"></div><div class="info"></div><div class="notew"><input type="text" class="nt77" placeholder="Note — blank = done as written" enterkeyhint="done" autocomplete="off"></div><div class="next"></div><button class="done"><span class="lbl">Set done</span><small></small></button>`);
     const pillR = el('button', 'restpill77');
     document.body.append(root, pillR);
-    let ex = null, sets = 1, rest = CFG.restDefault, restTotal = 1, doneN = 0, restEnd = 0, fresh = false, lock = null;
-    const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)/i); return { sets: m ? +m[1] : 1, rest: r ? +r[1] : 0, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
-    const allEx = () => { const inAm = !!(ex && ex.closest('.blk.am')); return $$('label.ex', today).filter(x => !$('input', x).checked && !x.classList.contains('skip') && (!!x.closest('.blk.am')) === inAm); };
+    let ex = null, seq = [], si = 0, pairRest = 0, restTotal = 1, restEnd = 0, fresh = false, lock = null;
+    const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)/i); return { sets: m ? +m[1] : 1, rest: r ? +r[1] : 0, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
+    const isOpen = x => x && !$('input', x).checked && !x.classList.contains('skip');
+    const sib = (x, d) => { let s = x[d]; while (s && !s.matches('label.ex')) { if (s.matches('.sh, .blk')) return null; s = s[d]; } return s; };
+    const ssHead = x => /SUPERSET/i.test($('.p', x)?.textContent || ''), ssIn = x => /done INSIDE/i.test($('.p', x)?.textContent || '');
+    /* superset pair: first card's .p says "SUPERSET — NO rest after this", second says "done INSIDE the … superset" */
+    function pairOf(x) { let A = null, B = null;
+      if (ssHead(x)) { A = x; B = sib(x, 'nextElementSibling'); } else if (ssIn(x)) { B = x; A = sib(x, 'previousElementSibling'); }
+      return A && B && ssHead(A) && ssIn(B) && isOpen(A) && isOpen(B) ? [A, B] : null; }
+    const allEx = () => { const inAm = !!(ex && ex.closest('.blk.am')); return $$('label.ex', today).filter(x => isOpen(x) && (!!x.closest('.blk.am')) === inAm); };
     async function wake() { try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) { lock = null; } }
     function unwake() { try { lock && lock.release(); } catch (e) {} lock = null; }
     document.addEventListener('visibilitychange', () => { if (!document.hidden && root.classList.contains('on')) wake(); });
-    function open(x) { load(x); root.classList.add('on'); wake(); draw(); }
+    function open(x) { build(x); root.classList.add('on'); wake(); draw(); }
     const noteW = $('.nt77', root);
     noteW.addEventListener('input', () => { const src = ex && $('input.nt', ex); if (src) { src.value = noteW.value; src.dispatchEvent(new Event('input', { bubbles: true })); } });
     noteW.addEventListener('change', () => { const src = ex && $('input.nt', ex); if (src) src.dispatchEvent(new Event('change', { bubbles: true })); });
     noteW.addEventListener('keydown', e => { if (e.key === 'Enter') noteW.blur(); });
-    function load(x) { ex = x; const pr = parse(x); sets = pr.sets; rest = pr.rest; doneN = 0;
-      const src = $('input.nt', x); noteW.value = src ? src.value : '';
+    /* seq = every set in run order; a pair interleaves A1 B1 A2 B2 … then the longer one's leftover sets */
+    function build(x) { const pr = pairOf(x); seq = []; si = 0;
+      if (pr) { const [A, B] = pr, a = parse(A), b = parse(B); pairRest = Math.max(a.rest, b.rest);
+        for (let i = 0; i < Math.max(a.sets, b.sets); i++) { if (i < a.sets) seq.push({ x: A, n: i, of: a.sets, pair: pr }); if (i < b.sets) seq.push({ x: B, n: i, of: b.sets, pair: pr }); }
+      } else { const a = parse(x); pairRest = a.rest; for (let i = 0; i < a.sets; i++) seq.push({ x, n: i, of: a.sets }); }
+      load(seq[0].x); }
+    const restAfter = i => { const c = seq[i], d = seq[i + 1]; return c.pair && d && c.x === c.pair[0] && d.x === c.pair[1] ? 0 : pairRest; };
+    function load(x) { if (ex !== x) { ex = x; const src = $('input.nt', x); noteW.value = src ? src.value : '';
       const pts = $$('.pts li', x).map(li => '<li>' + li.innerHTML + '</li>').join(''), why = $('.w', x)?.innerHTML || '', up = $('.up', x)?.innerHTML || '';
-      $('.info', root).innerHTML = (pts ? '<ol>' + pts + '</ol>' : '') + (why ? '<p class="why">' + why + '</p>' : '') + (up ? '<p class="up">' + up + '</p>' : '');
-    }
+      $('.info', root).innerHTML = (pts ? '<ol>' + pts + '</ol>' : '') + (why ? '<p class="why">' + why + '</p>' : '') + (up ? '<p class="up">' + up + '</p>' : ''); } }
+    const nm = x => $('b', x)?.textContent || '';
     function draw() {
       if (!ex) return;
+      const c = seq[si], sets = c.of, setNo = c.n + 1;
       const blk = ex.closest('.blk'), sh = (() => { let s = ex.previousElementSibling; while (s && !s.matches('.sh')) s = s.previousElementSibling; return s; })();
       $('.prog', root).style.setProperty('--p', getComputedStyle(today).getPropertyValue('--p'));
       $('.pct', root).textContent = $('.bar', today)?.dataset.pct || '';
-      $('.blkname', root).textContent = ($('.bh span', blk)?.firstChild?.textContent || '') + (sh ? ' · ' + sh.textContent : '');
-      $('.name', root).textContent = $('b', ex)?.textContent || ''; $('.rx', root).textContent = ($('.p', ex)?.textContent || '').replace(/ /g, ' ');
-      $('.dots', root).innerHTML = Array.from({ length: sets }, (_, i) => `<i class="${i < doneN ? 'done' : i === doneN ? 'now' : ''}"></i>`).join('');
+      $('.blkname', root).textContent = ($('.bh span', blk)?.firstChild?.textContent || '') + (sh ? ' · ' + sh.textContent : '') + (c.pair ? ' · SUPERSET ' + (c.x === c.pair[0] ? 'A' : 'B') : '');
+      $('.name', root).textContent = nm(ex); $('.rx', root).textContent = ($('.p', ex)?.textContent || '').replace(/ /g, ' ');
+      $('.dots', root).innerHTML = Array.from({ length: sets }, (_, i) => `<i class="${i < c.n ? 'done' : i === c.n ? 'now' : ''}"></i>`).join('');
       const remain = Math.max(0, Math.ceil((restEnd - Date.now()) / 1000));
-      const setNo = Math.min(doneN + 1, sets);
       if (remain > 0) {
         const f = Math.max(0, (restEnd - Date.now()) / (restTotal * 1000));
-        $('.mid', root).innerHTML = `<div class="ring" style="--f:${f.toFixed(3)}"><div class="t">${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}<small>rest, then ${fresh ? ($('b', ex)?.textContent || '').toLowerCase() : 'set ' + setNo + ' of ' + sets}</small></div></div><div class="restbtns"><button data-a="add">+15 s</button><button data-a="skip">Skip rest</button></div>`;
+        $('.mid', root).innerHTML = `<div class="ring" style="--f:${f.toFixed(3)}"><div class="t">${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}<small>rest, then ${fresh || c.pair ? nm(ex).toLowerCase() + (c.pair ? ' · set ' + setNo + ' of ' + sets : '') : 'set ' + setNo + ' of ' + sets}</small></div></div><div class="restbtns"><button data-a="add">+15 s</button><button data-a="skip">Skip rest</button></div>`;
         pillR.textContent = `Rest ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')} · back to set`;
       } else {
         const last = sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' '));
@@ -414,8 +427,9 @@
         if (restEnd && remain === 0) { restEnd = 0; vib(); }
       }
       pillR.classList.toggle('on', remain > 0 && !root.classList.contains('on'));
-      const nx = allEx().filter(x => x !== ex)[0];
-      $('.next', root).innerHTML = nx ? `<span>Next exercise</span><b>${$('b', nx)?.textContent || ''}</b>` : '';
+      const nxt = seq[si + 1];
+      if (nxt && nxt.x !== ex) $('.next', root).innerHTML = `<span>${restAfter(si) ? 'Then' : 'Straight into · no rest'}</span><b>${nm(nxt.x)} · set ${nxt.n + 1} of ${nxt.of}</b>`;
+      else { const inSeq = new Set(seq.map(s => s.x)), nx = allEx().filter(x => !inSeq.has(x))[0]; $('.next', root).innerHTML = nx ? `<span>Next exercise</span><b>${nm(nx)}</b>` : ''; }
       $('.done .lbl', root).textContent = sets > 1 ? 'Set done' : 'Done';
       $('.done small', root).textContent = sets > 1 ? 'set ' + setNo + ' of ' + sets : (parse(ex).target || '');
     }
@@ -425,13 +439,14 @@
       if (a === 'skip') restEnd = 0;
       if (e.target.closest('.x')) { root.classList.remove('on'); if (!restEnd) unwake(); }
       if (e.target.closest('.done')) {
-        vib(); doneN++;
-        if (doneN >= sets) {
-          const cb = $('input[type=checkbox]', ex); if (cb && !cb.checked) cb.click();
-          const r = rest, nx = allEx()[0];
+        vib(); const r = restAfter(si);
+        if (si >= seq.length - 1) {
+          new Set(seq.map(s => s.x)).forEach(x => { const cb = $('input[type=checkbox]', x); if (cb && !cb.checked) cb.click(); });
+          const nx = allEx()[0];
           if (!nx) { root.classList.remove('on'); unwake(); return; }
-          load(nx); fresh = true; restTotal = r || 1; restEnd = r ? Date.now() + r * 1000 : 0;
-        } else { fresh = false; restTotal = rest || 1; restEnd = rest ? Date.now() + rest * 1000 : 0; }
+          build(nx); fresh = true;
+        } else { si++; load(seq[si].x); fresh = false; }
+        restTotal = r || 1; restEnd = r ? Date.now() + r * 1000 : 0;
       }
       draw();
     });
