@@ -464,3 +464,22 @@ label.ex.open { grid-template-areas: "txt v bx" "go go go" "more more more"; }
 label.ex.curb .go77, label.ex.open .go77 { grid-area: go; display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; margin-top: 12px; border: 0; border-radius: var(--r-pill); background: #0b0a12; color: #f6f4ff; font: var(--t-btn); cursor: pointer; }
 label.ex.curb .go77::before, label.ex.open .go77::before { content: ""; border-left: 13px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
 label.ex:has(input:checked) .go77 { display: none !important; }
+
+/* Round three (22 Oct) */
+.quote77 { margin: 16px var(--gutter) 0; }
+.last77 { background: var(--acc-soft, oklch(.85 .15 var(--h) / .25)); border-left: 3px solid var(--accT); padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+label.ex.open .pts li.last77::before { color: var(--accT); }
+.wo77 .mid .holdw { font: 700 15px/1.3 var(--f-mono); color: var(--accT); border: 1.5px solid var(--accT); border-radius: 999px; padding: 8px 14px; }
+.wo77 .mid .set { font-size: 18px; }
+.wo77 .info { max-height: 28vh; overflow: auto; font: var(--t-body-s); color: var(--fg2); padding: 0 6px 10px; }
+.wo77 .info ol { margin: 0 0 8px; padding-left: 20px; } .wo77 .info li { margin: 3px 0; }
+.wo77 .info .why { margin: 0 0 6px; } .wo77 .info .why b, .wo77 .info .up b { color: var(--fg); }
+.wo77 .notew { padding: 0 0 12px; }
+.wo77 .nt77 { width: 100%; box-sizing: border-box; height: 48px; border-radius: var(--r-sm); border: 1px solid var(--line2); background: transparent; color: var(--fg); padding: 0 14px; font: var(--t-body-s); }
+@media (min-width: 900px) {
+  .wo77 .mid .set { font-size: 26px; letter-spacing: .12em; }
+  .wo77 .mid .target { font-size: 112px; }
+  .wo77 .mid .cue { font-size: 24px; max-width: 560px; }
+  .wo77 .dots i { width: 22px; height: 16px; } .wo77 .dots i.now { width: 48px; }
+  .wo77 .info { font-size: 17px; max-height: 24vh; }
+}

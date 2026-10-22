@@ -170,6 +170,7 @@
       ex.style.setProperty('--ci', i + 1);
       const txt = $('.txt', ex); if (!txt || $('.more77', ex)) return;
       txt.dataset.idx = String(i + 1).padStart(2, '0');
+      [$('.key', ex), ...$$('.pts li', ex)].forEach(nd => { if (nd && /last set/i.test(nd.textContent) && /hold/i.test(nd.textContent)) nd.classList.add('last77'); });
       const srcTxt = (($('.key', ex)?.textContent || '') + ' ' + ($('.pts', ex)?.textContent || '') + ' ' + ($('.c', ex)?.textContent || '')).replace(/\u00a0/g, ' ');
       const lm = srcTxt.match(/(\d+(?:\.\d+)?\s*kg(?:\s*(?:plates?(?:\s*(?:in each hand|per hand))?|per hand|in each hand|bell|ball))?)/i) || srcTxt.match(/\b(2\.7 plates|bodyweight)\b/i);
       if (lm && $('.p', ex)) { const chip = el('span', 'load77', lm[1].replace(/\s+/g, ' ')); $('.p', ex).after(chip); }
@@ -226,7 +227,9 @@
     day.style.setProperty('--p', p.toFixed(3));
     const bar = $('.bar', day); if (bar) { bar.dataset.pct = Math.round(p * 100) + '%'; bar.dataset.count = done + ' of ' + exs.length + ' done'; }
     exs.forEach(x => x.classList.remove('cur'));
-    const cur = exs.find(x => !$('input', x)?.checked && !x.classList.contains('skip'));
+    const open = x => !$('input', x)?.checked && !x.classList.contains('skip');
+    const pmTime = new Date().getHours() >= 12;
+    const cur = (day === today && pmTime ? exs.filter(x => !x.closest('.blk.am')).find(open) : null) || exs.find(open);
     if (day === today && cur) cur.classList.add('cur');
     exs.forEach(x => x.classList.remove('curb'));
     if (day === today) $$('.blk', day).forEach(blk => { const c = $$('label.ex', blk).find(x => !$('input', x)?.checked && !x.classList.contains('skip')); if (c) c.classList.add('curb'); });
@@ -237,7 +240,7 @@
       if (day === today && blk.dataset.userFold == null) blk.classList.toggle('fold', !(cur && blk.contains(cur)));
     });
     if (day === today) {
-      const amLeft = cur && cur.closest('.blk.am'); document.documentElement.dataset.session = (amLeft && new Date().getHours() < 12) ? 'am' : 'pm';
+      document.documentElement.dataset.session = (cur && cur.closest('.blk.am') && !pmTime) ? 'am' : 'pm';
       document.documentElement.style.setProperty('--p', p.toFixed(3));
       Week.render();
     }
@@ -266,9 +269,66 @@
   const futureDays = days.slice(days.indexOf(today) + 1);
   if (futureDays.length) { const h = el('div', 'next77', 'Coming up'); today.after(h); }
 
-  /* Quote → first row of today's AM block */
+  /* Quote → under the week strip (visible in every session), one per day from the pool */
+  const QUOTES = [
+    ['You have to fight to reach your dream. You have to sacrifice and work hard for it.', 'Lionel Messi'],
+    ['I start early and I stay late, day after day, year after year. It took me 17 years and 114 days to become an overnight success.', 'Lionel Messi'],
+    ['I\u2019ve failed over and over and over again in my life. And that is why I succeed.', 'Michael Jordan'],
+    ['Some people want it to happen, some wish it would happen, others make it happen.', 'Michael Jordan'],
+    ['I can accept failure, everyone fails at something. But I can\u2019t accept not trying.', 'Michael Jordan'],
+    ['You can\u2019t put a limit on anything. The more you dream, the farther you get.', 'Michael Phelps'],
+    ['I think goals should never be easy. They should force you to work, even if they are uncomfortable at the time.', 'Michael Phelps'],
+    ['I don\u2019t think limits.', 'Usain Bolt'],
+    ['I trained four years to run nine seconds.', 'Usain Bolt'],
+    ['Worrying gets you nowhere. If you turn up worrying about how you\u2019re going to perform, you\u2019ve already lost.', 'Usain Bolt'],
+    ['The limit is not the sky. The limit is the mind.', 'Wim Hof'],
+    ['Only the disciplined ones in life are free.', 'Eliud Kipchoge'],
+    ['No human is limited.', 'Eliud Kipchoge'],
+    ['Don\u2019t count the days, make the days count.', 'Muhammad Ali'],
+    ['I hated every minute of training, but I said, don\u2019t quit. Suffer now and live the rest of your life as a champion.', 'Muhammad Ali'],
+    ['The most important thing is to try and inspire people so that they can be great at whatever they want to do.', 'Kobe Bryant'],
+    ['Everything negative \u2014 pressure, challenges \u2014 is all an opportunity for me to rise.', 'Kobe Bryant'],
+    ['Losing is not my enemy. Fear of losing is my enemy.', 'Rafael Nadal'],
+    ['There is no way around the hard work. Embrace it.', 'Roger Federer'],
+    ['I really think a champion is defined not by their wins but by how they can recover when they fall.', 'Serena Williams'],
+    ['Your talent determines what you can do. Your motivation determines how much you\u2019re willing to do. Your attitude determines how well you do it.', 'Lou Holtz'],
+    ['It never gets easier, you just go faster.', 'Greg LeMond'],
+    ['The miracle isn\u2019t that I finished. The miracle is that I had the courage to start.', 'John Bingham'],
+    ['Hard work beats talent when talent doesn\u2019t work hard.', 'Tim Notke'],
+    ['We are what we repeatedly do. Excellence, then, is not an act, but a habit.', 'Will Durant'],
+    ['Discipline equals freedom.', 'Jocko Willink'],
+    ['Motivation is what gets you started. Habit is what keeps you going.', 'Jim Ryun'],
+    ['To give anything less than your best is to sacrifice the gift.', 'Steve Prefontaine'],
+    ['Pain is temporary. Quitting lasts forever.', 'Lance Armstrong'],
+    ['You have power over your mind, not outside events. Realise this, and you will find strength.', 'Marcus Aurelius'],
+    ['The impediment to action advances action. What stands in the way becomes the way.', 'Marcus Aurelius'],
+    ['Waste no more time arguing about what a good man should be. Be one.', 'Marcus Aurelius'],
+    ['At dawn, when you have trouble getting out of bed, tell yourself: I have to go to work \u2014 as a human being.', 'Marcus Aurelius'],
+    ['Confine yourself to the present.', 'Marcus Aurelius'],
+    ['We suffer more often in imagination than in reality.', 'Seneca'],
+    ['It is not that we have a short time to live, but that we waste a lot of it.', 'Seneca'],
+    ['First say to yourself what you would be; and then do what you have to do.', 'Epictetus'],
+    ['No man is free who is not master of himself.', 'Epictetus'],
+    ['Champions keep playing until they get it right.', 'Billie Jean King'],
+    ['Pressure is a privilege.', 'Billie Jean King'],
+    ['The more difficult the victory, the greater the happiness in winning.', 'Pel\u00e9'],
+    ['Success is no accident. It is hard work, perseverance, learning, studying, sacrifice and most of all, love of what you are doing.', 'Pel\u00e9'],
+    ['Your love makes me strong. Your hate makes me unstoppable.', 'Cristiano Ronaldo'],
+    ['Talent without working hard is nothing.', 'Cristiano Ronaldo'],
+    ['Once you learn to quit, it becomes a habit.', 'Vince Lombardi'],
+    ['It\u2019s not whether you get knocked down; it\u2019s whether you get up.', 'Vince Lombardi'],
+    ['Age is no barrier. It\u2019s a limitation you put on your mind.', 'Jackie Joyner-Kersee'],
+    ['Run when you can, walk if you have to, crawl if you must; just never give up.', 'Dean Karnazes'],
+    ['If you want to be the best, you have to do things other people aren\u2019t willing to do.', 'Michael Phelps'],
+    ['Be the hardest worker in the room.', 'Dwayne Johnson'],
+  ];
+  if (quote) {
+    quote.className = 'quote77';
+    const q = QUOTES[((n % QUOTES.length) + QUOTES.length) % QUOTES.length];
+    const qt = $('#qtx', quote), qa = $('#qau', quote); if (qt) qt.textContent = '\u201c' + q[0] + '\u201d'; if (qa) qa.textContent = '\u2014 ' + q[1];
+    (Week.node || $('summary', today)).after(quote);
+  }
   const am = $('.blk.am', today);
-  if (quote && am) { quote.className = 'quote77'; ($('.bh-rule', am) || $('.bh', am)).after(quote); }
 
   /* ── Sync pill → settings sheet ── */
   const pill = $(CFG.syncPill);
@@ -293,17 +353,25 @@
   const Workout = (() => {
     const root = el('div', 'wo77', `<div class="top"><button class="x" aria-label="Back to today">✕</button><div class="prog"><i></i></div><span class="pct" style="font:700 14px/1 var(--f-mono);color:var(--fg2)"></span></div>
       <div class="blkname"></div><div class="name"></div><div class="rx"></div><div class="dots"></div>
-      <div class="mid"></div><div class="next"></div><button class="done"><span class="lbl">Set done</span><small></small></button>`);
+      <div class="mid"></div><div class="info"></div><div class="notew"><input type="text" class="nt77" placeholder="Note — blank = done as written" enterkeyhint="done" autocomplete="off"></div><div class="next"></div><button class="done"><span class="lbl">Set done</span><small></small></button>`);
     const pillR = el('button', 'restpill77');
     document.body.append(root, pillR);
     let ex = null, sets = 1, rest = CFG.restDefault, restTotal = 1, doneN = 0, restEnd = 0, fresh = false, lock = null;
     const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)/i); return { sets: m ? +m[1] : 1, rest: r ? +r[1] : 0, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
-    const allEx = () => $$('label.ex', today).filter(x => !$('input', x).checked && !x.classList.contains('skip'));
+    const allEx = () => { const inAm = !!(ex && ex.closest('.blk.am')); return $$('label.ex', today).filter(x => !$('input', x).checked && !x.classList.contains('skip') && (!!x.closest('.blk.am')) === inAm); };
     async function wake() { try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) { lock = null; } }
     function unwake() { try { lock && lock.release(); } catch (e) {} lock = null; }
     document.addEventListener('visibilitychange', () => { if (!document.hidden && root.classList.contains('on')) wake(); });
     function open(x) { load(x); root.classList.add('on'); wake(); draw(); }
-    function load(x) { ex = x; const pr = parse(x); sets = pr.sets; rest = pr.rest; doneN = 0; }
+    const noteW = $('.nt77', root);
+    noteW.addEventListener('input', () => { const src = ex && $('input.nt', ex); if (src) { src.value = noteW.value; src.dispatchEvent(new Event('input', { bubbles: true })); } });
+    noteW.addEventListener('change', () => { const src = ex && $('input.nt', ex); if (src) src.dispatchEvent(new Event('change', { bubbles: true })); });
+    noteW.addEventListener('keydown', e => { if (e.key === 'Enter') noteW.blur(); });
+    function load(x) { ex = x; const pr = parse(x); sets = pr.sets; rest = pr.rest; doneN = 0;
+      const src = $('input.nt', x); noteW.value = src ? src.value : '';
+      const pts = $$('.pts li', x).map(li => '<li>' + li.innerHTML + '</li>').join(''), why = $('.w', x)?.innerHTML || '', up = $('.up', x)?.innerHTML || '';
+      $('.info', root).innerHTML = (pts ? '<ol>' + pts + '</ol>' : '') + (why ? '<p class="why">' + why + '</p>' : '') + (up ? '<p class="up">' + up + '</p>' : '');
+    }
     function draw() {
       if (!ex) return;
       const blk = ex.closest('.blk'), sh = (() => { let s = ex.previousElementSibling; while (s && !s.matches('.sh')) s = s.previousElementSibling; return s; })();
@@ -319,7 +387,8 @@
         $('.mid', root).innerHTML = `<div class="ring" style="--f:${f.toFixed(3)}"><div class="t">${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}<small>rest, then ${fresh ? ($('b', ex)?.textContent || '').toLowerCase() : 'set ' + setNo + ' of ' + sets}</small></div></div><div class="restbtns"><button data-a="add">+15 s</button><button data-a="skip">Skip rest</button></div>`;
         pillR.textContent = `Rest ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')} · back to set`;
       } else {
-        $('.mid', root).innerHTML = `<span class="set">${sets > 1 ? 'Set ' + setNo + ' of ' + sets : 'One go'}</span><span class="target">${parse(ex).target || ''}</span><span class="cue">${$('.key', ex)?.textContent || ''}</span>`;
+        const last = sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' '));
+        $('.mid', root).innerHTML = `<span class="set">${sets > 1 ? 'Set ' + setNo + ' of ' + sets + (last ? ' · LAST' : '') : 'One go'}</span><span class="target">${parse(ex).target || ''}</span><span class="cue">${$('.key', ex)?.textContent || ''}</span>${hold ? '<span class="holdw">Last set: finish with the stretched hold</span>' : ''}`;
         if (restEnd && remain === 0) { restEnd = 0; vib(); }
       }
       pillR.classList.toggle('on', remain > 0 && !root.classList.contains('on'));
