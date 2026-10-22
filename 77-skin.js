@@ -227,6 +227,8 @@
     exs.forEach(x => x.classList.remove('cur'));
     const cur = exs.find(x => !$('input', x)?.checked && !x.classList.contains('skip'));
     if (day === today && cur) cur.classList.add('cur');
+    exs.forEach(x => x.classList.remove('curb'));
+    if (day === today) $$('.blk', day).forEach(blk => { const c = $$('label.ex', blk).find(x => !$('input', x)?.checked && !x.classList.contains('skip')); if (c) c.classList.add('curb'); });
     $$('.blk', day).forEach(blk => {
       const bx = $$('label.ex', blk), dn = bx.filter(x => $('input', x)?.checked).length, handled = bx.filter(x => $('input', x)?.checked || x.classList.contains('skip')).length;
       const cnt = $('.bh .cnt', blk); if (cnt) cnt.textContent = dn + '/' + bx.length;
@@ -278,7 +280,7 @@
   if (pill) { pill.classList.add('sync77'); pill.removeAttribute('onclick'); pill.addEventListener('click', () => { sheet.classList.add('on'); }); }
   const st = el('div', 'syncstate77'); $('.slot-sync', sheet).append(st);
   const mirror = () => { const t = $('#synct'); const s = pill?.dataset.s || ''; st.textContent = (t ? t.textContent : '') ; st.dataset.s = s; }; mirror(); setInterval(mirror, 1000);
-  const conn = $(CFG.connectPanel); if (conn) { conn.style.display = 'block'; $('.slot-sync', sheet).append(conn); }
+  const conn = $(CFG.connectPanel); if (conn) { $('.slot-sync', sheet).append(conn); const chg = el('button', 'btn77', 'Change token'); chg.type = 'button'; chg.onclick = () => { conn.style.display = 'block'; chg.style.display = 'none'; }; $('.slot-sync', sheet).append(chg); const vis = () => { const s = pill?.dataset.s || ''; const ok = s === 'ok' || s === 'saving'; if (ok) { conn.style.display = 'none'; chg.style.display = ''; } else { conn.style.display = 'block'; chg.style.display = 'none'; } }; vis(); setInterval(vis, 1500); }
   if (reset) { const b = $('button', reset); if (b) { b.classList.add('btn77'); $('.slot-tools', sheet).append(b); } reset.remove(); }
   sheet.addEventListener('click', e => { if (e.target === sheet || e.target.closest('.close')) sheet.classList.remove('on'); const b = e.target.closest('.seg77 button'); if (b) { try { localStorage.setItem(CFG.themeKey, b.dataset.v); } catch (x) {} applyTheme(); } });
   applyTheme(); setInterval(applyTheme, 60000);

@@ -457,3 +457,10 @@ html[data-session="am"] details.day.today .dial77 .sun::after { content: ""; pos
 html[data-session="am"] details.day.today .dn, html[data-session="am"] details.day.today .dd { position: relative; z-index: 1; }
 
 .blk.fold .bh::before { display: none; }
+
+/* Start workout on the first open card of EVERY block, and on any expanded card */
+label.ex.curb, label.ex.open { grid-template-areas: "txt v bx" "go go go"; }
+label.ex.open { grid-template-areas: "txt v bx" "go go go" "more more more"; }
+label.ex.curb .go77, label.ex.open .go77 { grid-area: go; display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; margin-top: 12px; border: 0; border-radius: var(--r-pill); background: #0b0a12; color: #f6f4ff; font: var(--t-btn); cursor: pointer; }
+label.ex.curb .go77::before, label.ex.open .go77::before { content: ""; border-left: 13px solid currentColor; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+label.ex:has(input:checked) .go77 { display: none !important; }
