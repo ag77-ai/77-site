@@ -132,7 +132,7 @@
       this.node.innerHTML = `<span class="days">${html}</span><span class="sum">${doneW} of ${planned} this week<span>${streak()}-day streak</span></span>`;
     },
   };
-  function streak() { let s = 0; for (let i = days.indexOf(today) - 1; i >= 0; i--) { if ($$('input[type=checkbox]:checked', days[i]).length) s++; else break; } return s + 1; }
+  function streak() { let s = 0; for (let i = days.indexOf(today) - 1; i >= 0; i--) { if ($$('input[type=checkbox]:checked', days[i]).length) s++; else break; } return s + ($$('input[type=checkbox]:checked', today).length ? 1 : 0); }
 
   /* skips + test results: synced through O when the sync script is present, localStorage otherwise */
   function skipKey(day) { return 'skip_d' + dayNum(day); }

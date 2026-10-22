@@ -483,3 +483,6 @@ label.ex.open .pts li.last77::before { color: var(--accT); }
   .wo77 .dots i { width: 22px; height: 16px; } .wo77 .dots i.now { width: 48px; }
   .wo77 .info { font-size: 17px; max-height: 24vh; }
 }
+
+/* QA 22 Oct: "Reset all ticks" wipes every tick + note on every device in one confirm — hidden (not removed). Delete this line to bring it back. */
+[onclick^="resetAll"] { display: none !important; }
