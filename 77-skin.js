@@ -89,10 +89,10 @@
   const daysSorted = $$('details.day').sort((a, b) => dayNum(a) - dayNum(b));
   const firstDay = $('details.day');
   daysSorted.forEach(d => wrap.insertBefore(d, null));                 // append in order (moves them to the end, ordered)
+  const buildTxt = ($('#bld') && $('#bld').textContent) || '';
   // keep the sync pill + token panel; drop everything else that the design replaces
   ['header', '.tot', '.oi-ct', 'details.oi-p', '.oi-hint', '.oi-sub', '.pul', '.xp', 'footer', 'a[href*="dashboard"]'].forEach(s => $$(s).forEach(n => n.remove()));
   const quote = $('.qt'); const reset = $('.rst');
-  const buildTxt = ($('#bld') && $('#bld').textContent) || '';
 
   /* ── Theme ── */
   function applyTheme() {
