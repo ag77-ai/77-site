@@ -11,7 +11,7 @@
     themeKey: '77-theme',
     nightFrom: 18, nightTo: 8,
     lines: {
-      42: 'Day one of the new plan. Easy run, easy bar, chest first. Showing up is already done.',
+      42: 'Day one of the new plan. 4×4 first, easy bar, chest first. Showing up is already done.',
       43: 'Four reps, four evens. The first one decides the other three.',
       44: 'Tape, photos, truth. The scale is noise; the mirror is signal.',
       45: 'Twenty-five pull-ups in sets of five. The ladder starts here.',
