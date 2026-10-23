@@ -377,6 +377,35 @@
     const pillR = el('button', 'restpill77');
     document.body.append(root, pillR);
     let ex = null, seq = [], si = 0, pairRest = 0, restTotal = 1, restEnd = 0, fresh = false, lock = null;
+    /* s5a-9 + s5a-10 (Day 42 · 23 Oct): sound unlocked by the first tap in Workout Mode (iOS needs a gesture) · 3-2-1 + long beep at rest end · count-up hold timer */
+    let ac = null, beeped = 0, holdT0 = 0, holdHit = false, holdSide = 0, holdBeep = 0;
+    const holdLog = new Map();
+    function audioOn() { try { if (navigator.audioSession && navigator.audioSession.type !== 'transient') navigator.audioSession.type = 'transient'; } catch (e) {}
+      try { if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; ac = new C(); const s = ac.createBufferSource(); s.buffer = ac.createBuffer(1, 1, 22050); s.connect(ac.destination); s.start(0); } if (ac.state === 'suspended') ac.resume(); } catch (e) {} }
+    function tone(f, d, v = 0.4) { try { if (!ac) return; if (ac.state === 'suspended') ac.resume(); const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + 0.03); } catch (e) {} }
+    /* haptic: navigator.vibrate on Android; iOS 18+ Safari ticks when a <input switch> toggles (best effort) */
+    const hap = el('label', 'hap77', '<input type="checkbox" switch>'); hap.style.cssText = 'position:fixed;left:-99px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+    ['click', 'change', 'input'].forEach(ev => hap.addEventListener(ev, e => e.stopPropagation())); document.body.append(hap);
+    function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); else hap.click(); } catch (e) {} }
+    const tick321 = () => { tone(880, 0.14); buzz(40); }, goBeep = () => { tone(1320, 0.55, 0.5); buzz([220, 80, 220]); };
+    root.addEventListener('pointerdown', audioOn, { capture: true });
+    const mmss = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    /* timed card = ".p" says "N sets × 40 seconds" (EACH SIDE = two holds per set), or a hang / hold / plank test card (target = the LINE in its title, e.g. "57 s") */
+    const holdOf = x => { const a = ($('.p', x)?.textContent || '').replace(/ /g, ' ').split(/rest/i)[0], m = a.match(/×\s*(\d+)\s*sec/i), sides = /EACH SIDE/i.test(a) ? 2 : 1;
+      if (m) return { tgt: +m[1], sides };
+      if (/hang|hold|plank/i.test(nm(x)) && !/rounds?|\+/i.test(a)) { const n = nm(x).match(/(\d+)\s*s\b/); return { tgt: n ? +n[1] : 0, sides }; }
+      return null; };
+    function holdSave(x, secs) {
+      const src = $('input.nt', x); let L = holdLog.get(x);
+      if (!L) { const m = (src?.value || '').match(/⏱\s*([\d\/]+)/); L = m ? m[1].split('/').map(Number) : []; }
+      L.push(secs); holdLog.set(x, L);
+      if (src) { const keep = src.value.replace(/⏱[^|]*(\|\s*)?/, '').trim(), txt = '⏱ ' + L.join('/') + ' s'; src.value = keep ? txt + ' | ' + keep : txt;
+        src.dispatchEvent(new Event('input', { bubbles: true })); src.dispatchEvent(new Event('change', { bubbles: true })); if (x === ex) noteW.value = src.value; }
+      const r = $('.res77 input', x); if (r) { r.value = String(Math.max(...L)); r.dispatchEvent(new Event('input')); r.dispatchEvent(new Event('change')); } }
+    function holdTick() { const r = $('.hold77', root), H = ex && holdOf(ex); if (!r || !H || !holdT0) return; const s = Math.floor((Date.now() - holdT0) / 1000);
+      $('.hc', r).textContent = mmss(s); if (H.tgt) r.style.setProperty('--f', Math.min(1, s / H.tgt).toFixed(3));
+      if (H.tgt && s >= H.tgt - 3 && s < H.tgt && holdBeep !== s) { holdBeep = s; tick321(); }
+      if (H.tgt && s >= H.tgt && !holdHit) { holdHit = true; r.classList.add('hit'); goBeep(); } }
     const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)/i); return { sets: m ? +m[1] : 1, rest: r ? +r[1] : 0, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
     const isOpen = x => x && !$('input', x).checked && !x.classList.contains('skip');
     const sib = (x, d) => { let s = x[d]; while (s && !s.matches('label.ex')) { if (s.matches('.sh, .blk')) return null; s = s[d]; } return s; };
@@ -390,7 +419,7 @@
     async function wake() { try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) { lock = null; } }
     function unwake() { try { lock && lock.release(); } catch (e) {} lock = null; }
     document.addEventListener('visibilitychange', () => { if (!document.hidden && root.classList.contains('on')) wake(); });
-    function open(x) { build(x); root.classList.add('on'); wake(); draw(); }
+    function open(x) { audioOn(); holdT0 = 0; holdSide = 0; holdHit = false; build(x); root.classList.add('on'); wake(); draw(); }
     const noteW = $('.nt77', root);
     noteW.addEventListener('input', () => { const src = ex && $('input.nt', ex); if (src) { src.value = noteW.value; src.dispatchEvent(new Event('input', { bubbles: true })); } });
     noteW.addEventListener('change', () => { const src = ex && $('input.nt', ex); if (src) src.dispatchEvent(new Event('change', { bubbles: true })); });
@@ -420,10 +449,14 @@
         const f = Math.max(0, (restEnd - Date.now()) / (restTotal * 1000));
         $('.mid', root).innerHTML = `<div class="ring" style="--f:${f.toFixed(3)}"><div class="t">${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}<small>rest, then ${fresh || c.pair ? nm(ex).toLowerCase() + (c.pair ? ' · set ' + setNo + ' of ' + sets : '') : 'set ' + setNo + ' of ' + sets}</small></div></div><div class="restbtns"><button data-a="add">+15 s</button><button data-a="skip">Skip rest</button></div>`;
         pillR.textContent = `Rest ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')} · back to set`;
+        if (remain <= 3 && remain !== beeped) { beeped = remain; tick321(); }
       } else {
-        const last = sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' '));
-        $('.mid', root).innerHTML = `<span class="set">${sets > 1 ? 'Set ' + setNo + ' of ' + sets + (last ? ' · LAST' : '') : 'One go'}</span><span class="target">${parse(ex).target || ''}</span><span class="cue">${$('.key', ex)?.textContent || ''}</span>${hold ? '<span class="holdw">Last set: finish with the stretched hold</span>' : ''}`;
-        if (restEnd && remain === 0) { restEnd = 0; vib(); }
+        const last = sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' ')), H = holdOf(ex);
+        const setTxt = `<span class="set">${sets > 1 ? 'Set ' + setNo + ' of ' + sets + (last ? ' · LAST' : '') : 'One go'}</span>`;
+        if (H) { const run = holdT0 ? Math.floor((Date.now() - holdT0) / 1000) : 0;
+          $('.mid', root).innerHTML = setTxt + `<div class="ring hold77${holdHit ? ' hit' : ''}" style="--f:${H.tgt ? Math.min(1, run / H.tgt).toFixed(3) : 0}"><div class="t"><span class="hc">${mmss(run)}</span><small>${H.tgt ? 'target ' + H.tgt + ' s · keeps counting' : 'count up'}${H.sides === 2 ? ' · ' + (holdSide ? 'second side' : 'first side') : ''}</small></div></div><div class="restbtns"><button data-a="hold" class="${holdT0 ? 'stop' : 'go'}">${holdT0 ? 'Stop · save' : 'Start hold'}</button></div>`;
+        } else $('.mid', root).innerHTML = setTxt + `<span class="target">${parse(ex).target || ''}</span><span class="cue">${$('.key', ex)?.textContent || ''}</span>${hold ? '<span class="holdw">Last set: finish with the stretched hold</span>' : ''}`;
+        if (restEnd && remain === 0) { restEnd = 0; beeped = 0; goBeep(); }
       }
       pillR.classList.toggle('on', remain > 0 && !root.classList.contains('on'));
       const nxt = seq[si + 1];
@@ -434,10 +467,15 @@
     }
     root.addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
-      if (a === 'add') { restEnd += 15000; restTotal += 15; }
-      if (a === 'skip') restEnd = 0;
+      if (a === 'add') { restEnd += 15000; restTotal += 15; beeped = 0; }
+      if (a === 'skip') { restEnd = 0; beeped = 0; }
+      if (a === 'hold' && ex) { const H = holdOf(ex);
+        if (!holdT0) { holdT0 = Date.now(); holdHit = false; holdBeep = 0; tone(660, 0.08); }
+        else { const s = Math.round((Date.now() - holdT0) / 1000); holdT0 = 0; holdHit = false; holdSave(ex, s);
+          if (H && H.sides === 2 && !holdSide) holdSide = 1; else { holdSide = 0; $('.done', root).click(); return; } } }
       if (e.target.closest('.x')) { root.classList.remove('on'); if (!restEnd) unwake(); }
       if (e.target.closest('.done') && seq.length) {
+        if (holdT0) { holdSave(ex, Math.round((Date.now() - holdT0) / 1000)); holdT0 = 0; } holdSide = 0; holdHit = false;
         vib(); const r = restAfter(si);
         if (si >= seq.length - 1) {
           new Set(seq.map(s => s.x)).forEach(x => { const cb = $('input[type=checkbox]', x); if (cb && !cb.checked) cb.click(); });
@@ -445,12 +483,12 @@
           if (!nx) { root.classList.remove('on'); unwake(); return; }
           build(nx); fresh = true;
         } else { si++; load(seq[si].x); fresh = false; }
-        restTotal = r || 1; restEnd = r ? Date.now() + r * 1000 : 0;
+        restTotal = r || 1; restEnd = r ? Date.now() + r * 1000 : 0; beeped = 0;
       }
       draw();
     });
-    pillR.onclick = () => { root.classList.add('on'); wake(); draw(); };
-    setInterval(() => { if (restEnd) draw(); }, 250);
+    pillR.onclick = () => { audioOn(); root.classList.add('on'); wake(); draw(); };
+    setInterval(() => { if (restEnd) draw(); else if (holdT0) holdTick(); }, 250);
     return { open };
   })();
 })();

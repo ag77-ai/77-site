@@ -484,5 +484,11 @@ label.ex.open .pts li.last77::before { color: var(--accT); }
   .wo77 .info { font-size: 17px; max-height: 24vh; }
 }
 
+/* s5a-10 hold timer (23 Oct) */
+.wo77 .ring.hold77 { background: conic-gradient(var(--accT) calc(var(--f) * 360deg), var(--line) 0); }
+.wo77 .ring.hold77.hit { background: var(--acc); box-shadow: 0 0 80px oklch(.85 .15 var(--h) / .55); }
+.wo77 .ring.hold77 .hc { font: var(--t-timer); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.wo77 .restbtns button.go { background: var(--acc); color: var(--bg); border-color: var(--acc); min-width: 180px; }
+.wo77 .restbtns button.stop { background: var(--fg); color: var(--bg); border-color: var(--fg); min-width: 180px; }
 /* QA 22 Oct: "Reset all ticks" wipes every tick + note on every device in one confirm — hidden (not removed). Delete this line to bring it back. */
 [onclick^="resetAll"] { display: none !important; }
