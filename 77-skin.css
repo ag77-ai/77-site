@@ -450,7 +450,7 @@ label.ex.open .c { display: block; font: var(--t-body-s); color: var(--fg2); }
 label.ex:has(input:checked) .load77, label.ex.skip .load77 { background: var(--surf2); color: var(--fg3); }
 /* Sun dial on the AM hero too: sits behind the day number, shows today's % */
 details.day.today > summary { position: relative; }
-html[data-session="am"] details.day.today .dial77 { display: block; position: absolute; left: calc(var(--gutter-text) - 34px); top: 6px; width: 200px; height: 200px; z-index: 0; opacity: .6; pointer-events: none; }
+html[data-session="am"] details.day.today .dial77 { display: none; }   /* 29 Oct: AM ring behind the number removed — unreadable on the phone (AG). PM hero dial unchanged. */
 html[data-session="am"] details.day.today .dial77 .face { display: none; }
 html[data-session="am"] details.day.today .dial77 .sun { inset: 46px; box-shadow: 0 0 60px oklch(.8 .15 var(--h) / .45); }
 html[data-session="am"] details.day.today .dial77 .sun::after { content: ""; position: absolute; inset: 14px; border-radius: 50%; background: var(--bg); }
