@@ -140,10 +140,11 @@ details.day.test .banner77 { padding-top: 28px; }
 
 /* Sun dial hero (PM / evening) — JS injects .dial77 into today's summary and sets html[data-session="pm"] */
 .dial77 { display: none; }
-html[data-session="pm"] details.day.today > summary { grid-template-columns: 1fr; grid-template-areas: "dial" "tg" "line" "bar"; text-align: center; justify-items: center; }
-html[data-session="pm"] details.day.today .dn, html[data-session="pm"] details.day.today .dd { display: none; }
-html[data-session="pm"] details.day.today .bar { justify-self: stretch; text-align: left; }
-html[data-session="pm"] .dial77 { grid-area: dial; display: block; position: relative; width: 290px; height: 290px; --day: 0; }
+/* 29 Oct (AG): the dial IS the hero in every session — day number inside the face, sun arc = today's %, as designed. The dim AM ring behind the number is gone. */
+html[data-session] details.day.today > summary { grid-template-columns: 1fr; grid-template-areas: "dial" "tg" "line" "bar"; text-align: center; justify-items: center; }
+html[data-session] details.day.today .dn, html[data-session] details.day.today .dd { display: none; }
+html[data-session] details.day.today .bar { justify-self: stretch; text-align: left; }
+html[data-session] .dial77 { grid-area: dial; display: block; position: relative; width: 290px; height: 290px; --day: 0; }
 .dial77 .ticks, .dial77 .past { position: absolute; inset: 0; border-radius: 50%; }
 .dial77 .ticks { background: repeating-conic-gradient(var(--line2) 0 1.1deg, transparent 1.1deg 3.6deg);
   -webkit-mask: radial-gradient(circle, transparent 66%, #000 66.5% 70%, transparent 70.5%); mask: radial-gradient(circle, transparent 66%, #000 66.5% 70%, transparent 70.5%); }
@@ -448,13 +449,7 @@ label.ex.open .c { display: block; font: var(--t-body-s); color: var(--fg2); }
 /* Load chip on every card */
 .load77 { display: inline-block; width: fit-content; margin-top: 2px; padding: 4px 9px; border-radius: 999px; background: rgba(0,0,0,.12); color: var(--ink); font: 700 12px/1 var(--f-mono); letter-spacing: .04em; }
 label.ex:has(input:checked) .load77, label.ex.skip .load77 { background: var(--surf2); color: var(--fg3); }
-/* Sun dial on the AM hero too: sits behind the day number, shows today's % */
-details.day.today > summary { position: relative; }
-html[data-session="am"] details.day.today .dial77 { display: none; }   /* 29 Oct: AM ring behind the number removed — unreadable on the phone (AG). PM hero dial unchanged. */
-html[data-session="am"] details.day.today .dial77 .face { display: none; }
-html[data-session="am"] details.day.today .dial77 .sun { inset: 46px; box-shadow: 0 0 60px oklch(.8 .15 var(--h) / .45); }
-html[data-session="am"] details.day.today .dial77 .sun::after { content: ""; position: absolute; inset: 14px; border-radius: 50%; background: var(--bg); }
-html[data-session="am"] details.day.today :is(.dn, .dd, .tg, .line77, .bar, .pct77) { position: relative; z-index: 1; }
+details.day.today > summary { position: relative; }   /* AM dim-ring rules removed 29 Oct */
 
 .blk.fold .bh::before { display: none; }
 
