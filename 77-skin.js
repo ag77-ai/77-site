@@ -84,7 +84,10 @@
   const wrap = $('.w') || document.body;
   const oldPast = $('details.past');
   if (oldPast) { $$('details.day', oldPast).forEach(d => wrap.append(d)); oldPast.remove(); }
-  const dayNum = d => +(($('.dn', d)?.textContent || '').match(/\d+/) || [0])[0];
+  const dayNum = d => { const e = $('.dn', d); return +(e?.dataset.n || ((e?.textContent || '').match(/\d+/) || [0])[0]); };
+  /* SEASON 2 (10 Nov 2026): new 77-day plan. Internal day 61 = Wed 11 Nov = shown as Day 1. Ids, ticks, notes, skip/res keys keep the internal number. */
+  const S2 = 61, S2_TOTAL = 77, disp = k => k >= S2 ? k - S2 + 1 : k;
+  const LINES2 = { 1: 'Day one of the new plan. Scale, photos, bar, easy run. Showing up is the whole job.' };
   const daysSorted = $$('details.day').sort((a, b) => dayNum(a) - dayNum(b));
   daysSorted.forEach(d => wrap.insertBefore(d, null));                 // append in order (moves them to the end, ordered)
   const buildTxt = ($('#bld') && $('#bld').textContent) || '';
@@ -108,7 +111,7 @@
   const today = days.find(d => d.open) || days[days.length - 1];
   if (!today) return;
   today.classList.add('today');
-  const n = dayNum(today);
+  const n = dayNum(today), nd = disp(n), s2 = n >= S2;
 
   /* Week strip (declared before refresh() can call it) */
   const Week = {
@@ -153,7 +156,7 @@
     const tagTxt = ($('.tg', day)?.textContent || '');
     if (/TEST|TRIAL/i.test(tagTxt)) day.classList.add('test');
     if (/EKADASHI/i.test(tagTxt)) day.classList.add('eka');
-    const dn = $('.dn', day); if (dn && !dn.dataset.n) { dn.dataset.n = String(dayNum(day)); dn.textContent = dn.dataset.n; }
+    const dn = $('.dn', day); if (dn && !dn.dataset.n) { const k = dayNum(day); dn.dataset.n = String(k); dn.textContent = k >= S2 ? String(disp(k)) : 'S1·' + k; }
 
     // Food line items → .food77 (keeps the real checkbox so it still syncs)
     $$('label.ex[for$="_food"]', day).forEach(f => {
@@ -248,9 +251,9 @@
   /* ── Hero extras on today: daily line, dial, banner ── */
   const sum = $('summary', today);
   if (sum && !$('.line77', sum)) {
-    sum.append(el('div', 'line77', CFG.lines[n] || CFG.defaultLines[n % CFG.defaultLines.length]));
-    const dial = el('div', 'dial77', `<div class="ticks"></div><div class="past"></div><div class="sun"></div><div class="face"><small>DAY</small><strong>${n}</strong><span>${$('.dd', today)?.textContent || ''}</span></div>`);
-    dial.style.setProperty('--day', ((n - 1) / 100).toFixed(2)); sum.prepend(dial);
+    sum.append(el('div', 'line77', s2 ? (LINES2[nd] || CFG.defaultLines[nd % CFG.defaultLines.length]) : (CFG.lines[n] || CFG.defaultLines[n % CFG.defaultLines.length])));
+    const dial = el('div', 'dial77', `<div class="ticks"></div><div class="past"></div><div class="sun"></div><div class="face"><small>DAY</small><strong>${nd}</strong><span>${$('.dd', today)?.textContent || ''}</span></div>`);
+    dial.style.setProperty('--day', ((nd - 1) / (s2 ? S2_TOTAL : 100)).toFixed(2)); sum.prepend(dial);
     if (today.classList.contains('test')) sum.prepend(el('div', 'banner77', '<div><b>Test day</b>Fresh, full effort, every number written down. Lines only go up.</div>'));
     sum.addEventListener('click', e => e.preventDefault());
   }
