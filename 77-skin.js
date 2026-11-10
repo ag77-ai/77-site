@@ -30,7 +30,7 @@
       58: 'Tempo joins today: five kilometres, the middle three at 158–166.',
       59: 'Add weight only where every rep was clean. That is the whole rule.',
       60: 'Sixty in, forty left. Lean mass goes up from here.',
-      61: 'Weighted pull-ups 5×3. The thick bar made this light.',
+      61: 'Day one of the new plan. Scale, photos, bar, easy run. Showing up is the whole job.',
       62: 'Sunday by feel. Photos first. Then whatever the legs say.',
       63: 'Loads up on everything that was clean twice.',
       64: 'Easy miles build the engine the trial will spend.',
