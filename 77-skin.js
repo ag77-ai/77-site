@@ -269,6 +269,22 @@
   }
   const futureDays = days.slice(days.indexOf(today) + 1);
   if (futureDays.length) { const h = el('div', 'next77', 'Coming up'); today.after(h); }
+  /* LINES card (13 Nov 2026, new Day 3): three lines + slope -0.4 kg/wk; edit values here only. Lines never go down. */
+  if (s2 && !$('details.lines77')) {
+    const CK = [[5,'15 Nov',74.97],[12,'22 Nov',74.57],[19,'29 Nov',74.17],[26,'6 Dec',73.77],[33,'13 Dec',73.37],[40,'20 Dec',72.97],[47,'27 Dec',72.57],[54,'3 Jan',72.17],[61,'10 Jan',71.77],[68,'17 Jan',71.37],[75,'24 Jan',70.97]];
+    const nxt = (CK.find(c => c[0] >= nd) || [])[0];
+    const td = 'style="padding:4px 6px;border-bottom:1px solid rgba(127,127,127,.25);text-align:left"';
+    const rows = [['Body fat → weight','75.20 kg','11.4 % = 71.63 kg','10.5 % = 70.91 kg'],['Waist','81.0 cm','77.5 cm','76.5 cm'],['5K','31:22 (old)','24:30','23:00'],['Pull-ups','7 (old)','14','18']];
+    const tbl = '<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th '+td+'>Line</th><th '+td+'>Now</th><th '+td+'>Day 40 · Sun 20 Dec</th><th '+td+'>Day 77 · Tue 26 Jan</th></tr>' + rows.map(r => '<tr>' + r.map(c => '<td '+td+'>'+c+'</td>').join('') + '</tr>').join('') + '</table>';
+    const ck = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' + CK.map(c => '<span style="padding:3px 7px;border-radius:8px;font-size:12px;border:1px solid rgba(127,127,127,.35);' + (c[0]===nxt ? 'font-weight:700;border-color:currentColor' : '') + '">Day ' + c[0] + ' · Sun ' + c[1] + ' · ' + c[2].toFixed(2) + '</span>').join('') + '</div>';
+    const w = el('details', 'lines77', '<summary style="cursor:pointer;font-weight:700;padding:8px 0">LINES<span style="font-weight:400;opacity:.7"> · −0.4 kg a week · lines only go up</span></summary>' + tbl +
+      '<p style="font-size:13px;margin:10px 0 2px"><b>Sunday weight checkpoints</b> (7-day waking average, −0.4 kg a week from 75.20)</p>' + ck +
+      '<p style="font-size:13px;margin:10px 0 2px"><b>Slope review Day 19 · Sun 29 Nov:</b> step to −0.5 only if gym loads rose AND waist fell on both Sundays.</p>' +
+      '<p style="font-size:13px;margin:6px 0 8px"><b>Muscle:</b> the weight lines assume lean held. Every +1 kg of muscle moves the 11.4 % weight up ~1.1 kg (lean +1 → 72.75 kg). Muscle is judged by gym loads, waist and photos; scale muscle is recorded, not judged.</p>');
+    w.style.cssText = 'margin:10px 0;padding:0 12px 4px;border:1px solid rgba(127,127,127,.35);border-radius:14px';
+    today.after(w);
+  }
+
 
   /* Quote → under the week strip (visible in every session), one per day from the pool */
   /* 71 verified quotes (sources: 77-quotes-review.html). Index = day − 42 → Days 42–100 never repeat. */
