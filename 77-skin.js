@@ -425,7 +425,7 @@
       $('.hc', r).textContent = mmss(s); if (H.tgt) r.style.setProperty('--f', Math.min(1, s / H.tgt).toFixed(3));
       if (H.tgt && s >= H.tgt - 3 && s < H.tgt && holdBeep !== s) { holdBeep = s; tick321(); }
       if (H.tgt && s >= H.tgt && !holdHit) { holdHit = true; r.classList.add('hit'); goBeep(); } }
-    const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)/i); return { sets: m ? +m[1] : 1, rest: r ? +r[1] : 0, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
+    const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)\s*(min|sec|s)?(?:\s*(\d+))?/i); /* 16 Nov fix: 'rest 2 min' was read as 2 s */ const rs = r ? (/^min/i.test(r[2] || '') ? +r[1] * 60 + (r[3] ? +r[3] : 0) : +r[1]) : 0; return { sets: m ? +m[1] : 1, rest: rs, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
     const isOpen = x => x && !$('input', x).checked && !x.classList.contains('skip');
     const sib = (x, d) => { let s = x[d]; while (s && !s.matches('label.ex')) { if (s.matches('.sh, .blk')) return null; s = s[d]; } return s; };
     const ssHead = x => /SUPERSET/i.test($('.p', x)?.textContent || ''), ssIn = x => /done INSIDE/i.test($('.p', x)?.textContent || '');
