@@ -487,3 +487,28 @@ label.ex.open .pts li.last77::before { color: var(--accT); }
 .wo77 .restbtns button.stop { background: var(--fg); color: var(--bg); border-color: var(--fg); min-width: 180px; }
 /* QA 22 Oct: "Reset all ticks" wipes every tick + note on every device in one confirm — hidden (not removed). Delete this line to bring it back. */
 [onclick^="resetAll"] { display: none !important; }
+
+/* ───────────── 17 Nov fix (AG Day 2: workout screen zoomed, timer + Set done unreachable) ───────────── */
+html, body, .wo77, .wo77 * { touch-action: manipulation; }            /* no iOS double-tap zoom on fast taps */
+.wo77 { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: 0; }
+.wo77 .rx { font-size: 14px; line-height: 1.35; }
+.wo77 .mid { flex: 1 0 auto; min-height: 0; padding: 10px 0 14px; }
+.wo77 .target { max-width: 100%; overflow-wrap: anywhere; line-height: 1; }
+.wo77 .target.s { font-size: 52px; }
+.wo77 .target.xs { font-size: 30px; line-height: 1.15; }
+.wo77 .load { font: 800 20px/1.2 var(--f-mono); color: var(--onAcc); background: var(--acc); border-radius: 999px; padding: 8px 16px; max-width: 100%; }
+.wo77 .ring .t small .ldr { display: inline-block; margin-top: 6px; font: 800 15px/1.2 var(--f-mono); color: var(--fg); }
+.wo77 .dots i.wu { border-style: dashed; }
+.wo77 > button.done { position: sticky; bottom: 0; flex: 0 0 auto; margin-bottom: calc(env(safe-area-inset-bottom) + 14px); box-shadow: 0 -14px 24px var(--bg); }
+.wo77 .next { flex: 0 0 auto; }
+@media (max-height: 780px) {
+  .wo77 .blkname { margin-top: 14px; }
+  .wo77 .name { font-size: 32px; }
+  .wo77 .ring { width: 200px; height: 200px; }
+  .wo77 .ring .t { font-size: 64px; }
+  .wo77 .target { font-size: 60px; } .wo77 .target.s { font-size: 40px; } .wo77 .target.xs { font-size: 26px; }
+  .wo77 .info { max-height: 20vh; }
+}
+@media (min-width: 900px) { .wo77 .target.s { font-size: 72px; } .wo77 .target.xs { font-size: 40px; } }
+.wo77 .info { flex: 0 0 auto; max-height: none; overflow: visible; padding-bottom: 14px; }   /* 17 Nov: full HOW list, reached by scrolling; Set done stays pinned */
+.wo77 .info ol { font-size: 16px; }

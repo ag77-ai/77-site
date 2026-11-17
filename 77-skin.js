@@ -274,11 +274,11 @@
     const CK = [[7,'22 Nov',74.86],[14,'29 Nov',74.46],[21,'6 Dec',74.06],[28,'13 Dec',73.66],[35,'20 Dec',73.26],[42,'27 Dec',72.86],[49,'3 Jan',72.46],[56,'10 Jan',72.06],[63,'17 Jan',71.66],[70,'24 Jan',71.26],[77,'31 Jan',70.86]];
     const nxt = (CK.find(c => c[0] >= nd) || [])[0];
     const td = 'style="padding:4px 6px;border-bottom:1px solid rgba(127,127,127,.25);text-align:left"';
-    const rows = [['Body fat → weight','75.20 kg','11.4 % = 71.63 kg','10.5 % = 70.91 kg'],['Waist','81.0 cm','77.5 cm','76.5 cm'],['5K','31:22 (old)','24:30','23:00'],['Pull-ups','7 (old)','14','18']];
+    const rows = [['Body fat → weight','75.20 kg','11.4 % = 71.63 kg<br><small>route at −0.4/wk = 73.03 · this line needs −0.66/wk · route reaches it Day 64 · Mon 18 Jan</small>','10.5 % = 70.91 kg<br><small>route at −0.4/wk = 70.86 ✓</small>'],['Waist','81.0 cm','77.5 cm','76.5 cm'],['5K','31:22 (old)','24:30','23:00'],['Pull-ups','7 (old)','14','18']];
     const tbl = '<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th '+td+'>Line</th><th '+td+'>Now</th><th '+td+'>Day 39 · Thu 24 Dec</th><th '+td+'>Day 77 · Sun 31 Jan</th></tr>' + rows.map(r => '<tr>' + r.map(c => '<td '+td+'>'+c+'</td>').join('') + '</tr>').join('') + '</table>';
     const ck = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' + CK.map(c => '<span style="padding:3px 7px;border-radius:8px;font-size:12px;border:1px solid rgba(127,127,127,.35);' + (c[0]===nxt ? 'font-weight:700;border-color:currentColor' : '') + '">Day ' + c[0] + ' · Sun ' + c[1] + ' · ' + c[2].toFixed(2) + '</span>').join('') + '</div>';
     const w = el('details', 'lines77', '<summary style="cursor:pointer;font-weight:700;padding:8px 0">LINES<span style="font-weight:400;opacity:.7"> · −0.4 kg a week · lines only go up</span></summary>' + tbl +
-      '<p style="font-size:13px;margin:10px 0 2px"><b>Sunday weight checkpoints</b> (7-day waking average, −0.4 kg a week from 75.20 until the Day 1 waking read)</p>' + ck +
+      '<p style="font-size:13px;margin:10px 0 2px"><b>Sunday weight checkpoints</b> (7-day waking average, −0.4 kg a week from the Day 1 waking read 75.20 kg)</p>' + ck +
       '<p style="font-size:13px;margin:10px 0 2px"><b>Slope review Day 14 · Sun 29 Nov:</b> step to −0.5 only if gym loads rose AND waist fell on both Sundays.</p>' +
       '<p style="font-size:13px;margin:6px 0 8px"><b>Muscle:</b> the weight lines assume lean held. Every +1 kg of muscle moves the 11.4 % weight up ~1.1 kg (lean +1 → 72.75 kg). Muscle is judged by gym loads, waist and photos; scale muscle is recorded, not judged.</p>');
     w.style.cssText = 'margin:10px 0;padding:0 12px 4px;border:1px solid rgba(127,127,127,.35);border-radius:14px';
@@ -425,7 +425,15 @@
       $('.hc', r).textContent = mmss(s); if (H.tgt) r.style.setProperty('--f', Math.min(1, s / H.tgt).toFixed(3));
       if (H.tgt && s >= H.tgt - 3 && s < H.tgt && holdBeep !== s) { holdBeep = s; tick321(); }
       if (H.tgt && s >= H.tgt && !holdHit) { holdHit = true; r.classList.add('hit'); goBeep(); } }
-    const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' '); const m = t.match(/(\d+)\s*(?:sets?|rounds?)/i) || t.match(/^(\d+)\s*×/); const r = t.match(/rest\s*(\d+)\s*(min|sec|s)?(?:\s*(\d+))?/i); /* 16 Nov fix: 'rest 2 min' was read as 2 s */ const rs = r ? (/^min/i.test(r[2] || '') ? +r[1] * 60 + (r[3] ? +r[3] : 0) : +r[1]) : 0; return { sets: m ? +m[1] : 1, rest: rs, target: (t.match(/×\s*([^·]+)/) || [, ''])[1].trim() }; };
+    /* 17 Nov fix (AG: workout screen unusable): warm-ups ("1 × 10 empty bar, then …") become their own sets; big target = reps only, the load goes in a pill */
+    const parse = x => { const t = ($('.p', x)?.textContent || '').replace(/ /g, ' ');
+      const r = t.match(/rest\s*(\d+)\s*(min|sec|s)?(?:\s*(\d+))?/i); const rs = r ? (/^min/i.test(r[2] || '') ? +r[1] * 60 + (r[3] ? +r[3] : 0) : +r[1]) : 0;
+      const body = t.split(/·\s*rest/i)[0], th = body.split(/,?\s*then\s+/i), work = th.length > 1 ? th.slice(1).join(' then ') : body;
+      const warm = th.length > 1 ? th[0].split(',').map(q => q.match(/(\d+)\s*×\s*(\d+)\s*(?:reps?)?\s*(?:@\s*)?(.*)/i)).filter(Boolean).flatMap(q => Array.from({ length: +q[1] }, () => ({ reps: q[2] + ' reps', load: q[3].trim() }))) : [];
+      const m = work.match(/(\d+)\s*(?:sets?|rounds?)/i) || work.match(/^\s*(\d+)\s*×/);
+      const tg = (work.match(/×\s*([^·]+)/) || [, ''])[1].trim(), at = tg.split(/\s@\s*/);
+      const ea = at[0].trim().match(/^(.*?)\s+(EACH \w+)$/i), ld0 = (at[1] || '').trim();
+      return { sets: m ? +m[1] : 1, rest: rs, target: ea ? ea[1] : at[0].trim(), load: ea ? ea[2].toLowerCase() + (ld0 ? ' · ' + ld0 : '') : ld0, warm }; };
     const isOpen = x => x && !$('input', x).checked && !x.classList.contains('skip');
     const sib = (x, d) => { let s = x[d]; while (s && !s.matches('label.ex')) { if (s.matches('.sh, .blk')) return null; s = s[d]; } return s; };
     const ssHead = x => /SUPERSET/i.test($('.p', x)?.textContent || ''), ssIn = x => /done INSIDE/i.test($('.p', x)?.textContent || '');
@@ -447,9 +455,11 @@
     function build(x) { const pr = pairOf(x); seq = []; si = 0;
       if (pr) { const [A, B] = pr, a = parse(A), b = parse(B); pairRest = Math.max(a.rest, b.rest);
         for (let i = 0; i < Math.max(a.sets, b.sets); i++) { if (i < a.sets) seq.push({ x: A, n: i, of: a.sets, pair: pr }); if (i < b.sets) seq.push({ x: B, n: i, of: b.sets, pair: pr }); }
-      } else { const a = parse(x); pairRest = a.rest; for (let i = 0; i < a.sets; i++) seq.push({ x, n: i, of: a.sets }); }
+      } else { const a = parse(x), W = a.warm, tot = W.length + a.sets; pairRest = a.rest;
+        W.forEach((w, i) => seq.push({ x, n: i, of: W.length, warm: w, k: i, tot }));
+        for (let i = 0; i < a.sets; i++) seq.push({ x, n: i, of: a.sets, k: W.length + i, tot }); }
       load(seq[0].x); }
-    const restAfter = i => { const c = seq[i], d = seq[i + 1]; return c.pair && d && c.x === c.pair[0] && d.x === c.pair[1] ? 0 : pairRest; };
+    const restAfter = i => { const c = seq[i], d = seq[i + 1]; if (c.warm) return Math.min(60, pairRest || 60); return c.pair && d && c.x === c.pair[0] && d.x === c.pair[1] ? 0 : pairRest; };
     function load(x) { if (ex !== x) { ex = x; const src = $('input.nt', x); noteW.value = src ? src.value : '';
       const pts = $$('.pts li', x).map(li => '<li>' + li.innerHTML + '</li>').join(''), why = $('.w', x)?.innerHTML || '', up = $('.up', x)?.innerHTML || '';
       $('.info', root).innerHTML = (pts ? '<ol>' + pts + '</ol>' : '') + (why ? '<p class="why">' + why + '</p>' : '') + (up ? '<p class="up">' + up + '</p>' : ''); } }
@@ -462,27 +472,29 @@
       $('.pct', root).textContent = $('.bar', today)?.dataset.pct || '';
       $('.blkname', root).textContent = ($('.bh span', blk)?.firstChild?.textContent || '') + (sh ? ' · ' + sh.textContent : '') + (c.pair ? ' · SUPERSET ' + (c.x === c.pair[0] ? 'A' : 'B') : '');
       $('.name', root).textContent = nm(ex); $('.rx', root).textContent = ($('.p', ex)?.textContent || '').replace(/ /g, ' ');
-      $('.dots', root).innerHTML = Array.from({ length: sets }, (_, i) => `<i class="${i < c.n ? 'done' : i === c.n ? 'now' : ''}"></i>`).join('');
+      const K = c.k ?? c.n, T = c.tot ?? sets, WN = seq.filter(q => q.x === ex && q.warm).length, P = parse(ex), lbl = c.warm ? 'warm-up ' + setNo + ' of ' + sets : 'set ' + setNo + ' of ' + sets, ld = c.warm ? c.warm.load : P.load;
+      $('.dots', root).innerHTML = Array.from({ length: T }, (_, i) => `<i class="${i < K ? 'done' : i === K ? 'now' : ''}${i < WN ? ' wu' : ''}"></i>`).join('');
       const remain = Math.max(0, Math.ceil((restEnd - Date.now()) / 1000));
       if (remain > 0) {
         const f = Math.max(0, (restEnd - Date.now()) / (restTotal * 1000));
-        $('.mid', root).innerHTML = `<div class="ring" style="--f:${f.toFixed(3)}"><div class="t">${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}<small>rest, then ${fresh || c.pair ? nm(ex).toLowerCase() + (c.pair ? ' · set ' + setNo + ' of ' + sets : '') : 'set ' + setNo + ' of ' + sets}</small></div></div><div class="restbtns"><button data-a="add">+15 s</button><button data-a="skip">Skip rest</button></div>`;
+        $('.mid', root).innerHTML = `<div class="ring" style="--f:${f.toFixed(3)}"><div class="t">${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')}<small>rest, then ${fresh || c.pair ? nm(ex).toLowerCase() + (c.pair ? ' · ' + lbl : '') : lbl}${ld ? '<br><b class="ldr">' + ld + '</b>' : ''}</small></div></div><div class="restbtns"><button data-a="add">+15 s</button><button data-a="skip">Skip rest</button></div>`;
         pillR.textContent = `Rest ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')} · back to set`;
         if (remain <= 3 && remain !== beeped) { beeped = remain; tick321(); }
       } else {
-        const last = sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' ')), H = holdOf(ex);
-        const setTxt = `<span class="set">${sets > 1 ? 'Set ' + setNo + ' of ' + sets + (last ? ' · LAST' : '') : 'One go'}</span>`;
+        const last = !c.warm && sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' ')), H = holdOf(ex);
+        const setTxt = `<span class="set">${c.warm ? 'Warm-up ' + setNo + ' of ' + sets + ' · light' : sets > 1 ? 'Set ' + setNo + ' of ' + sets + (last ? ' · LAST' : '') : 'One go'}</span>`;
         if (H) { const run = holdT0 ? Math.floor((Date.now() - holdT0) / 1000) : 0;
           $('.mid', root).innerHTML = setTxt + `<div class="ring hold77${holdHit ? ' hit' : ''}" style="--f:${H.tgt ? Math.min(1, run / H.tgt).toFixed(3) : 0}"><div class="t"><span class="hc">${mmss(run)}</span><small>${H.tgt ? 'target ' + H.tgt + ' s · keeps counting' : 'count up'}${H.sides === 2 ? ' · ' + (holdSide ? 'second side' : 'first side') : ''}</small></div></div><div class="restbtns"><button data-a="hold" class="${holdT0 ? 'stop' : 'go'}">${holdT0 ? 'Stop · save' : 'Start hold'}</button></div>`;
-        } else $('.mid', root).innerHTML = setTxt + `<span class="target">${parse(ex).target || ''}</span><span class="cue">${$('.key', ex)?.textContent || ''}</span>${hold ? '<span class="holdw">Last set: finish with the stretched hold</span>' : ''}`;
+        } else { const big = (c.warm ? c.warm.reps : P.target) || '';
+          $('.mid', root).innerHTML = setTxt + `<span class="target${big.length > 22 ? ' xs' : big.length > 9 ? ' s' : ''}">${big}</span>${ld ? '<span class="load">' + ld + '</span>' : ''}<span class="cue">${$('.key', ex)?.textContent || ''}</span>${hold ? '<span class="holdw">Last set: finish with the stretched hold</span>' : ''}`; }
         if (restEnd && remain === 0) { restEnd = 0; beeped = 0; goBeep(); }
       }
       pillR.classList.toggle('on', remain > 0 && !root.classList.contains('on'));
       const nxt = seq[si + 1];
       if (nxt && nxt.x !== ex) $('.next', root).innerHTML = `<span>${restAfter(si) ? 'Then' : 'Straight into · no rest'}</span><b>${nm(nxt.x)} · set ${nxt.n + 1} of ${nxt.of}</b>`;
       else { const inSeq = new Set(seq.map(s => s.x)), nx = allEx().filter(x => !inSeq.has(x))[0]; $('.next', root).innerHTML = nx ? `<span>Next exercise</span><b>${nm(nx)}</b>` : ''; }
-      $('.done .lbl', root).textContent = sets > 1 ? 'Set done' : 'Done';
-      $('.done small', root).textContent = sets > 1 ? 'set ' + setNo + ' of ' + sets : (parse(ex).target || '');
+      $('.done .lbl', root).textContent = c.warm ? 'Warm-up done' : sets > 1 ? 'Set done' : 'Done';
+      $('.done small', root).textContent = c.warm || sets > 1 ? lbl : (P.target || '');
     }
     root.addEventListener('click', e => {
       const a = e.target.closest('[data-a]')?.dataset.a;
@@ -493,7 +505,7 @@
         else { const s = Math.round((Date.now() - holdT0) / 1000); holdT0 = 0; holdHit = false; holdSave(ex, s);
           if (H && H.sides === 2 && !holdSide) holdSide = 1; else { holdSide = 0; $('.done', root).click(); return; } } }
       if (e.target.closest('.x')) { root.classList.remove('on'); if (!restEnd) unwake(); }
-      if (e.target.closest('.done') && seq.length) {
+      if (e.target.closest('button.done') && seq.length) { /* 17 Nov: a tap on a finished progress dot no longer counts a set */
         if (holdT0) { holdSave(ex, Math.round((Date.now() - holdT0) / 1000)); holdT0 = 0; } holdSide = 0; holdHit = false;
         vib(); const r = restAfter(si);
         if (si >= seq.length - 1) {
