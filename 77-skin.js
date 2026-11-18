@@ -470,7 +470,7 @@
       const blk = ex.closest('.blk'), sh = (() => { let s = ex.previousElementSibling; while (s && !s.matches('.sh')) s = s.previousElementSibling; return s; })();
       $('.prog', root).style.setProperty('--p', getComputedStyle(today).getPropertyValue('--p'));
       $('.pct', root).textContent = $('.bar', today)?.dataset.pct || '';
-      $('.blkname', root).textContent = ($('.bh span', blk)?.firstChild?.textContent || '') + (sh ? ' · ' + sh.textContent : '') + (c.pair ? ' · SUPERSET ' + (c.x === c.pair[0] ? 'A' : 'B') : '');
+      $('.blkname', root).textContent = ((blk && $('.bh span', blk))?.firstChild?.textContent || '') + (sh ? ' · ' + sh.textContent : '') + (c.pair ? ' · SUPERSET ' + (c.x === c.pair[0] ? 'A' : 'B') : '');
       $('.name', root).textContent = nm(ex); $('.rx', root).textContent = ($('.p', ex)?.textContent || '').replace(/ /g, ' ');
       const K = c.k ?? c.n, T = c.tot ?? sets, WN = seq.filter(q => q.x === ex && q.warm).length, P = parse(ex), lbl = c.warm ? 'warm-up ' + setNo + ' of ' + sets : 'set ' + setNo + ' of ' + sets, ld = c.warm ? c.warm.load : P.load;
       $('.dots', root).innerHTML = Array.from({ length: T }, (_, i) => `<i class="${i < K ? 'done' : i === K ? 'now' : ''}${i < WN ? ' wu' : ''}"></i>`).join('');
@@ -481,7 +481,7 @@
         pillR.textContent = `Rest ${Math.floor(remain / 60)}:${String(remain % 60).padStart(2, '0')} · back to set`;
         if (remain <= 3 && remain !== beeped) { beeped = remain; tick321(); }
       } else {
-        const last = !c.warm && sets > 1 && setNo === sets, hold = last && /hold/i.test(($('.key', ex)?.textContent || '') + $$('.pts li', ex).map(l => l.textContent).join(' ')), H = holdOf(ex);
+        const last = !c.warm && sets > 1 && setNo === sets, hold = last && [$('.key', ex), ...$$('.pts li', ex)].some(nd => nd && /last set/i.test(nd.textContent) && /hold/i.test(nd.textContent)), H = holdOf(ex);
         const setTxt = `<span class="set">${c.warm ? 'Warm-up ' + setNo + ' of ' + sets + ' · light' : sets > 1 ? 'Set ' + setNo + ' of ' + sets + (last ? ' · LAST' : '') : 'One go'}</span>`;
         if (H) { const run = holdT0 ? Math.floor((Date.now() - holdT0) / 1000) : 0;
           $('.mid', root).innerHTML = setTxt + `<div class="ring hold77${holdHit ? ' hit' : ''}" style="--f:${H.tgt ? Math.min(1, run / H.tgt).toFixed(3) : 0}"><div class="t"><span class="hc">${mmss(run)}</span><small>${H.tgt ? 'target ' + H.tgt + ' s · keeps counting' : 'count up'}${H.sides === 2 ? ' · ' + (holdSide ? 'second side' : 'first side') : ''}</small></div></div><div class="restbtns"><button data-a="hold" class="${holdT0 ? 'stop' : 'go'}">${holdT0 ? 'Stop · save' : 'Start hold'}</button></div>`;
