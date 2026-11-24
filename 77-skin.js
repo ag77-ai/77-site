@@ -271,10 +271,10 @@
   if (futureDays.length) { const h = el('div', 'next77', 'Coming up'); today.after(h); }
   /* LINES card (13 Nov 2026, new Day 3): three lines + slope -0.4 kg/wk; edit values here only. Lines never go down. */
   if (s2 && !$('details.lines77')) {
-    const CK = [[7,'22 Nov',74.66],[14,'29 Nov',74.16],[21,'6 Dec',73.55],[28,'13 Dec',73.05],[35,'20 Dec',72.44],[42,'27 Dec',71.94],[49,'3 Jan',71.33],[56,'10 Jan',70.91],[63,'17 Jan',70.91],[70,'24 Jan',70.91],[77,'31 Jan',70.91]];
+    const CK = [[7,'22 Nov',74.40],[14,'29 Nov',73.90],[21,'6 Dec',73.29],[28,'13 Dec',72.79],[35,'20 Dec',72.18],[42,'27 Dec',71.68],[49,'3 Jan',71.07],[56,'10 Jan',70.91],[63,'17 Jan',70.91],[70,'24 Jan',70.91],[77,'31 Jan',70.91]];
     const nxt = (CK.find(c => c[0] >= nd) || [])[0];
     const td = 'style="padding:4px 6px;border-bottom:1px solid rgba(127,127,127,.25);text-align:left"';
-    const rows = [['Body fat → weight','75.20 kg','11.4 % = 71.63 kg<br><small>AIM ONE: route at −0.5/wk + Ekadashi = 72.16 kg on Day 39 · route reaches this line Day 47 · Fri 1 Jan</small>','10.5 % = 70.91 kg<br><small>route reaches it Day 55 · Sat 9 Jan, then holds</small>'],['Waist','81.0 cm','77.5 cm','76.5 cm'],['5K','31:22 (old)','24:30','23:00'],['Pull-ups','7 (old)','14','18']];
+    const rows = [['Body fat → weight','74.94 kg','11.4 % = 71.63 kg<br><small>AIM ONE: route at −0.5/wk + Ekadashi = 71.90 kg on Day 39 · route reaches this line Day 43 · Mon 28 Dec</small>','10.5 % = 70.91 kg<br><small>route reaches it Day 52 · Wed 6 Jan, then holds</small>'],['Waist','80.0 cm','77.5 cm','76.5 cm'],['5K','31:22 (old)','24:30','23:00'],['Pull-ups','9 (Day 9)','14','18']];
     const tbl = '<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th '+td+'>Line</th><th '+td+'>Now</th><th '+td+'>Day 39 · Thu 24 Dec</th><th '+td+'>Day 77 · Sun 31 Jan</th></tr>' + rows.map(r => '<tr>' + r.map(c => '<td '+td+'>'+c+'</td>').join('') + '</tr>').join('') + '</table>';
     const ck = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">' + CK.map(c => '<span style="padding:3px 7px;border-radius:8px;font-size:12px;border:1px solid rgba(127,127,127,.35);' + (c[0]===nxt ? 'font-weight:700;border-color:currentColor' : '') + '">Day ' + c[0] + ' · Sun ' + c[1] + ' · ' + c[2].toFixed(2) + '</span>').join('') + '</div>';
     const w = el('details', 'lines77', '<summary style="cursor:pointer;font-weight:700;padding:8px 0">LINES<span style="font-weight:400;opacity:.7"> · −0.5 kg a week + Ekadashi · lines only go up</span></summary>' + tbl +
